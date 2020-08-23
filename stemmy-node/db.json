@@ -1,0 +1,299 @@
+{
+  "projects": [
+    {
+      "name": "19 Feb 2020, 4%3A06",
+      "clock": {
+        "BPM": 82.81020395096539,
+        "BPMIsGuessed": true,
+        "beatsPerBar": 4,
+        "length": 23.185548500000003,
+        "lengthIsSet": false,
+        "metadataVersion": 2,
+        "multiplier": 8,
+        "originalBPM": 82.81020395096539
+      },
+      "tracks": [],
+      "id": 1
+    }
+  ],
+  "tracks": [
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 2,
+      "pan": 0,
+      "playing": false,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 1,
+      "id": 1
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 12,
+      "pan": 0,
+      "playing": false,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 1,
+      "id": 2
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 1,
+      "pan": 0,
+      "playing": false,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 1,
+      "id": 3
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 3,
+      "pan": 0,
+      "playing": false,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 1,
+      "id": 4
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 4,
+      "pan": 0,
+      "playing": true,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 0.47641730308532715,
+      "id": 5
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 10,
+      "pan": 0,
+      "playing": false,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 0.8889628648757935,
+      "id": 6
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 5,
+      "pan": 0,
+      "playing": false,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 1,
+      "id": 7
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 6,
+      "pan": 0.43517276644706726,
+      "playing": false,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 1,
+      "id": 8
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 7,
+      "pan": 0,
+      "playing": true,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 1,
+      "id": 9
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 9,
+      "pan": 0.6121366620063782,
+      "playing": false,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 0.11066117882728577,
+      "id": 10
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 8,
+      "pan": -0.557410478591919,
+      "playing": false,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 0.46544572710990906,
+      "id": 11
+    },
+    {
+      "projectId": 1,
+      "entityType": 0,
+      "entityId": 11,
+      "pan": 0,
+      "playing": true,
+      "reverse": false,
+      "scale": 1,
+      "synchronize": true,
+      "volume": 1,
+      "id": 12
+    }
+  ],
+  "loops": [
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-2.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 1
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-0.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 2
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-3.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 3
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-4.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 4
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-6.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 5
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-7.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 6
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-8.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 7
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-10.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 8
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-9.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 9
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-5.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 10
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-11.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 11
+    },
+    {
+      "originalProjectId": 1,
+      "decay": 0,
+      "loopStartTime": 0,
+      "originalLoopStartTime": -1,
+      "originalScale": 0,
+      "filePath": "/home/timfitzgerald/stemmy-node/fileStore/p1-1.aiff",
+      "source": 2,
+      "pngPaths": [],
+      "id": 12
+    }
+  ]
+}
