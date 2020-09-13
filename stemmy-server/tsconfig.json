@@ -18,24 +18,12 @@
     "newLine": "LF",
     "noEmit": true,
     "resolveJsonModule": true,
-    "lib": [
-      "es7",
-      "dom",
-      "esnext.asynciterable"
-    ],
-    "typeRoots": [
-      "./node_modules/@types"
-    ]
+    "lib": ["es7", "dom", "esnext.asynciterable"],
+    "typeRoots": ["./node_modules/@types", "./src/@types"],
+    "rootDirs": ["src"]
   },
-  "include": [
-    "./src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules",
-    "./public",
-    "dist",
-    "test"
-  ],
+  "include": ["./src/**/*.ts", "./testData/**/*.ts"],
+  "exclude": ["node_modules", "./public", "dist", "test"],
   "linterOptions": {
     "exclude": []
   }

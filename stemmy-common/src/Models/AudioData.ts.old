@@ -1,0 +1,33 @@
+// export class AudioData {
+//   public wavData: WavData = {};
+//   public wavInfo: ReadResult = {};
+//   public wavStream: Buffer = new Buffer('');
+  
+//   constructor(public path: string) {}
+
+//   async init(): Promise<void> {
+//     let riffRead: Boolean = false;
+//     const riffProcessed: Boolean = false;
+//     let firstChunk: Buffer = new Buffer(40);
+
+//     // wav.on('format', () => {
+
+//     // })
+//     let inputStream = fs.createReadStream(__dirname + path);
+//     inputStream.on('open', () => {
+//       inputStream.on('data', (chunk: Buffer) => {
+//         if (!riffRead && chunk.byteLength > 40) {
+//           chunk.copy(firstChunk, 0, 0, 40);
+//           let wavInfo = getFileInfoFromHeader(firstChunk);
+//           console.log(wavInfo);
+//           this.wavInfo = wavInfo;
+//           riffRead = true;
+//         }
+//         this.wavStream = Buffer.concat([this.wavStream, chunk]);
+//       });
+//       inputStream.on('end', () => {
+//         this.wavData = wav.decode(this.wavStream);
+//       });
+//     });
+//   }
+// }
