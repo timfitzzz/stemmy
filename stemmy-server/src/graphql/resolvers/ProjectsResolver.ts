@@ -4,7 +4,8 @@ import { Arg, Args, Query, Mutation } from 'type-graphql';
 import { ProjectsService } from '../../services/ProjectsService';
 import { ProjectSchema } from '../../models/ProjectSchema';
 import { ProjectProps } from '../../stemmy-common';
-import { InternalServerError } from '@tsed/exceptions';
+import { InternalServerError, NotFound } from '@tsed/exceptions';
+import { AddProjectInput } from '../inputs/AddProjectInput';
 
 @ResolverService(ProjectSchema)
 export class ProjectResolver {
@@ -15,10 +16,25 @@ export class ProjectResolver {
   async project(@Arg('id', { nullable: true }) id?: string) {
     const project = await this.projectsService.find(id);
     if (project == undefined) {
-      throw new Error(id);
+      throw new NotFound(`Project id ${id} not found`);
     }
-    console.log(project);
     return project;
+  }
+
+  @Query((returns) => [ProjectSchema])
+  async projectsPage(
+    @Arg('page', { nullable: true })
+    page: number = 1,
+    @Arg('perPage', { nullable: true })
+    perPage: number = 20
+  ): Promise<ProjectSchema[]> {
+    return await this.projectsService.getPage(page, perPage).catch((err) => {
+      throw new NotFound(
+        `Projects ${(page - 1) * perPage + 1} through ${
+          page * perPage
+        } not found`
+      );
+    });
   }
 
   @Query((returns) => [ProjectSchema])
@@ -30,13 +46,26 @@ export class ProjectResolver {
     return projects;
   }
 
-  @Mutation()
-  async addProject(
-    @Arg('params', (type) => ProjectSchema) params: ProjectSchema
+  @Mutation((returns) => ProjectSchema)
+  async createProject(
+    @Arg('params', (type) => AddProjectInput) params: ProjectProps
   ): Promise<ProjectSchema | null> {
     const project = this.projectsService.save(params).catch((err) => {
       throw new InternalServerError(err);
     });
     return project;
+  }
+
+  @Mutation((returns) => ProjectSchema)
+  async updateProject(
+    @Arg('id')
+    id: string,
+    @Arg('params', (type) => AddProjectInput)
+    params: ProjectProps
+  ): Promise<ProjectSchema | null> {
+    return this.projectsService.update({
+      ...params,
+      id,
+    });
   }
 }

@@ -3,11 +3,37 @@
 # !!!   DO NOT MODIFY THIS FILE BY YOURSELF   !!!
 # -----------------------------------------------
 
+"""Initial project data"""
+input AddProjectInput {
+  name: String!
+  tracks: [String!]
+  _id: ID
+  clock: ProjectClockInput
+}
+
+"""Initial track settings"""
+input AddTrackInput {
+  projectId: String!
+  entityType: audioEntityTypes
+  entityId: String!
+  pan: Float = 0
+  playing: Boolean = false
+  reverse: Boolean = false
+  scale: Float!
+  synchronize: Boolean!
+  volume: Float!
+}
+
 """Origin of audio"""
 enum AudioEntitySources {
   loopyhd
   web
   unset
+}
+
+"""Type of audio entity (0 = Loop)"""
+enum audioEntityTypes {
+  Loop
 }
 
 type LoopSchema {
@@ -22,6 +48,12 @@ type LoopSchema {
   source: AudioEntitySources
 }
 
+type Mutation {
+  createProject(params: AddProjectInput!): ProjectSchema!
+  updateProject(params: AddProjectInput!, id: String!): ProjectSchema!
+  createTrack(params: AddTrackInput!): TrackSchema!
+}
+
 type png {
   shape: PngShapes!
   size: Float!
@@ -32,6 +64,17 @@ type png {
 enum PngShapes {
   round
   flat
+}
+
+"""Project clock settings"""
+input ProjectClockInput {
+  BPM: Float
+  BPMIsGuessed: Boolean
+  beatsPerBar: Float
+  length: Float
+  lengthIsSet: Boolean
+  multiplier: Float
+  originalBPM: Float
 }
 
 type ProjectClockSchema {
@@ -45,13 +88,32 @@ type ProjectClockSchema {
 }
 
 type ProjectSchema {
-  _id: ID!
-  tracks: String!
+  _id: ID
+  tracks: [String!]!
   clock: ProjectClockSchema!
   name: String!
 }
 
 type Query {
+  loop(id: String): LoopSchema!
+  loopsPage(perPage: Float, page: Float): [LoopSchema!]!
+  allLoops: [LoopSchema!]!
   project(id: String): ProjectSchema!
+  projectsPage(perPage: Float, page: Float): [ProjectSchema!]!
   allProjects: [ProjectSchema!]!
+  track(id: String): TrackSchema!
+  tracksPage(perPage: Float, page: Float): [TrackSchema!]!
+}
+
+type TrackSchema {
+  _id: String!
+  projectId: String!
+  entityType: Float
+  entityId: String
+  pan: Float!
+  playing: Boolean!
+  reverse: Boolean!
+  scale: Float!
+  synchronize: Boolean!
+  volume: Float!
 }

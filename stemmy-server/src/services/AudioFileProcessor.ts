@@ -83,7 +83,7 @@ export class AudioFileProcessor {
     diameter: number = 600,
     shape: PngShapes = PngShapes['round']
   ): Promise<png> {
-    console.log('creating pngs');
+    //console.log('creating pngs');
     // if (!this.fileReader.output.data) {
     //   await this.readFile();
     // }

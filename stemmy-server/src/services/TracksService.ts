@@ -38,11 +38,11 @@ export class TracksService {
   @Inject(LoopsService)
   private LoopsService: LoopsService;
 
-  async getPage(page: number, perPage: number): Promise<TrackSchema[] | null> {
+  async getPage(page: number, perPage: number): Promise<TrackSchema[]> {
     return await this.Track.find(
       {},
       {},
-      { skip: page * perPage, limit: perPage }
+      { skip: (page - 1) * perPage, limit: perPage }
     );
   }
 

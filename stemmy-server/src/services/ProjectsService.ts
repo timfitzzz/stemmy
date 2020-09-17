@@ -41,15 +41,11 @@ export class ProjectsService {
       try {
         const project = await this.Project.findById(id);
         if (!project) {
-          console.log('project not found');
           rej('Project not found');
         } else {
-          console.log(`found project: `, project);
           if (project.tracks == undefined || project.tracks == null) {
-            console.log(`no tracks property on project`);
             res([]);
           } else if (project.tracks.length === 0) {
-            console.log(`tracks property is empty array`);
             res([]);
           } else {
             if (project.tracks) {
@@ -61,7 +57,6 @@ export class ProjectsService {
           }
         }
       } catch (err) {
-        console.log('caught error: ', err);
         rej(err);
       }
     });
@@ -71,7 +66,7 @@ export class ProjectsService {
     return await this.Project.find(
       {},
       {},
-      { skip: page * perPage, limit: perPage }
+      { skip: (page - 1) * perPage, limit: perPage }
     );
     this.Project.find();
   }
@@ -90,12 +85,31 @@ export class ProjectsService {
         _id: (props.id as unknown) as string,
       };
 
-      if (props.clock) {
-      }
-
       return await this.Project.create(newProject);
     }
     return null;
+  }
+
+  async update(props: ProjectProps): Promise<ProjectSchema | null> {
+    if (props) {
+      const updateObject: ProjectSchema = {
+        ...props,
+        tracks:
+          (props.tracks &&
+            props.tracks.map((trackId) => {
+              return (trackId as unknown) as string;
+            })) ||
+          [],
+        _id: (props.id as unknown) as string,
+      };
+
+      return await this.Project.findOneAndUpdate(
+        { id: props.id },
+        updateObject
+      );
+    } else {
+      return null;
+    }
   }
 }
 

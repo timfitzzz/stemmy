@@ -8,6 +8,8 @@ import { stringify } from 'querystring';
 import { MongooseDocument, Mongoose } from 'mongoose';
 import { deepExtends } from '@tsed/core';
 import { promises } from 'fs';
+import { AudioFileProcessor } from './AudioFileProcessor';
+import { convertLoopSchemaToLoopProps } from '../controllers/LoopsController';
 
 @Service()
 export class LoopsService {
@@ -35,12 +37,11 @@ export class LoopsService {
     return await this.Loop.find(
       {},
       {},
-      { skip: page * perPage, limit: perPage }
+      { skip: (page - 1) * perPage, limit: perPage }
     );
   }
 
   async save(props: LoopProps): Promise<LoopSchema | null> {
-    console.log(props);
     // @ts-ignore
     const newLoop: LoopSchema = {
       ...props,
@@ -63,6 +64,22 @@ export class LoopsService {
       },
       { new: true }
     );
+  }
+
+  async processNewLoop(
+    props: LoopProps,
+    path: string
+  ): Promise<LoopSchema | null> {
+    const audioFileProcessor = new AudioFileProcessor(path);
+    let { pngs } = await audioFileProcessor.readAndProcessFile();
+
+    return await this.save(props).then(async (data: LoopSchema) => {
+      if (data && data._id) {
+        return await this.attachFiles(data._id, path, pngs);
+      } else {
+        return null;
+      }
+    });
   }
 
   getAudioPath(fileName: string): string {

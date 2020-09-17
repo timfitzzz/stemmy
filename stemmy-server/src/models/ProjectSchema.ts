@@ -2,11 +2,11 @@ import mongoose from 'mongoose';
 import { Property, Ignore, Enum, Required } from '@tsed/common';
 import { Model, ObjectID, Schema, Ref } from '@tsed/mongoose';
 import { TrackSchema } from './TrackSchema';
-import { ObjectType, Field, ID } from 'type-graphql';
+import { ObjectType, Field, ID, InputType } from 'type-graphql';
 
 @ObjectType()
 @Schema()
-class ProjectClockSchema {
+export class ProjectClockSchema {
   @Property()
   @Field()
   BPM?: number;
@@ -40,11 +40,11 @@ class ProjectClockSchema {
 @Model({ name: 'Project' })
 export class ProjectSchema {
   @ObjectID('id')
-  @Field((type) => ID)
+  @Field((type) => ID, { nullable: true })
   _id: string;
 
   @Ref('TrackSchema')
-  @Field((type) => String)
+  @Field((type) => [String])
   tracks?: Ref<TrackSchema>[];
 
   @Property()

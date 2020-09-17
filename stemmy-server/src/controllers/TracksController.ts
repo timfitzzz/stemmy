@@ -28,7 +28,7 @@ export class TracksController {
   async getPage(
     @Description('How many projects to return per page')
     @BodyParams('page')
-    page: number = 0,
+    page: number = 1,
     @Description('Which page of results to return')
     @BodyParams('perPage')
     perPage: number = 20
@@ -50,7 +50,6 @@ export class TracksController {
     @PathParams('id')
     id: string
   ): Promise<trackBundle | trackBundle[] | null> {
-    console.log(id);
     return this.tracksService.findById(id).catch((err) => {
       throw new NotFound('Track not found');
     });

@@ -24,16 +24,18 @@ export class ProjectsController {
   @Summary('Get a page from the Public projects collection')
   @Status(200, { description: 'Success' })
   async getPage(
-    @Description('How many projects to return')
-    @BodyParams('page')
-    page: number = 0,
     @Description('Which page of results to return')
+    @BodyParams('page')
+    page: number = 1,
+    @Description('How many pages of results to return')
     @BodyParams('perPage')
     perPage: number = 20
   ): Promise<ProjectSchema[]> {
     return this.projectsService.getPage(page, perPage).catch((err) => {
       throw new NotFound(
-        `Projects ${page * perPage} through ${page * perPage + 1 - 1} not found`
+        `Projects ${page * perPage} through ${
+          page * perPage + 1 - 1
+        } not found: ${err}`
       );
     });
   }
@@ -106,10 +108,9 @@ export class ProjectsController {
     @BodyParams()
     params: ProjectProps
   ): Promise<ProjectSchema | null> {
-    return this.projectsService.find(id).then(() =>
-      this.projectsService.save(params).catch((err) => {
-        throw new InternalServerError(err);
-      })
-    );
+    return this.projectsService.update({
+      ...params,
+      id,
+    });
   }
 }

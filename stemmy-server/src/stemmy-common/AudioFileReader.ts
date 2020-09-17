@@ -38,7 +38,7 @@ export class AudioFileReader {
   constructor(public path: string) {}
 
   async getSingleArray(asset: any): Promise<Float32Array> {
-    console.log('getting single array');
+    // console.log('getting single array');
     return new Promise((resolve, reject) => {
       try {
         asset.decodeToBuffer(function (buffer: Float32Array) {
@@ -104,7 +104,7 @@ export class AudioFileReader {
   async getFormat(asset: any): Promise<AuroraAssetFormat> {
     return await new Promise((resolve, reject) => {
       try {
-        console.log(asset.decoder.demuxer.fileType);
+        // console.log(asset.decoder.demuxer.fileType);
         asset.get('format', (formatInfo: AuroraAssetFormat) => {
           this.output.format = formatInfo;
           resolve(formatInfo);

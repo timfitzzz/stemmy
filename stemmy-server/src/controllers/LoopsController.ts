@@ -48,7 +48,9 @@ function mapSchemaToProps<P>(
   };
 }
 
-export const convertLoopSchemaToLoopProps = mapSchemaToProps<LoopProps>([
+export const convertLoopSchemaToLoopProps: (
+  source: LoopSchema
+) => LoopProps = mapSchemaToProps<LoopProps>([
   ['originalProjectId', 'originalProjectId'],
   ['id', '_id'],
 ]);
@@ -67,7 +69,7 @@ export class LoopsController {
   async getPage(
     @Description('How many loops to return')
     @BodyParams('page')
-    page: number = 0,
+    page: number = 1,
     @Description('Which page of results to return')
     @BodyParams('perPage')
     perPage: number = 20
@@ -106,15 +108,11 @@ export class LoopsController {
   ): Promise<void> {
     await this.loopsService.findById(id).then(async (loop) => {
       if (loop && loop.fileName) {
-        console.log(this.loopsService.getAudioPath(loop.fileName));
         let filePath = this.loopsService.getAudioPath(loop.fileName);
-        console.log(filePath);
         let filePathPath = resolve(filePath);
-        console.log(filePathPath);
         res.type('wav');
         res.sendFile(filePathPath, {}, (err) => {
           if (err) {
-            console.log(err);
           }
           next();
         });
@@ -142,11 +140,54 @@ export class LoopsController {
   }
 
   @Post('/upload')
+  @Summary(
+    'Upload one or more loops and audio files and retrieve loop documents'
+  )
+  @Status(200, { description: 'Success' })
+  //@Returns(LoopSchema[])
+  async upload(
+    @Description('the array of loop documents being uploaded')
+    @BodyParams('loopData')
+    loopData: string,
+
+    @Description(
+      'the array of loop files that go with the documents being uploaded'
+    )
+    @MultipartFile('files')
+    files: Express.Multer.File[]
+  ): Promise<LoopProps[] | LoopProps | null> {
+    const loops: LoopProps[] = JSON.parse(loopData);
+    if (loops) {
+      const output: Promise<LoopProps[]> = Promise.all<LoopProps>(
+        loops.map((data, index) => {
+          return new Promise(async (res, rej) => {
+            const newLoop: LoopSchema | null = await this.loopsService.processNewLoop(
+              data,
+              files[index].path
+            );
+            if (newLoop) {
+              res(convertLoopSchemaToLoopProps(newLoop));
+            } else {
+              rej('no loop');
+            }
+          });
+        })
+      ).catch((err) => {
+        console.log(err);
+        throw new InternalServerError(err);
+      });
+      return output;
+    } else {
+      return null;
+    }
+  }
+
+  @Post('/replace')
   @Summary('Upload an audio file to assign to the loop with the given id')
   @Status(200, { description: 'Success' })
   //@Consumes('multipart/form-data', 'audio/x-aiff', 'audio/wav')
   @Returns(LoopSchema)
-  async uploadFile(
+  async replaceFile(
     @Description('The id of an existing loop entity')
     @BodyParams('id')
     id: string,
@@ -154,7 +195,6 @@ export class LoopsController {
     @MultipartFile('file')
     file: Express.Multer.File
   ): Promise<LoopProps | null> {
-    console.log('file: ', file);
     const audioFileProcessor = new AudioFileProcessor(file.path);
     let { output, pngs } = await audioFileProcessor.readAndProcessFile();
 
@@ -164,7 +204,6 @@ export class LoopsController {
         return this.loopsService
           .find(id)
           .then((data: LoopSchema) => {
-            console.log('before loopProps conversion: ', data);
             return convertLoopSchemaToLoopProps(data);
           })
           .catch((err) => {

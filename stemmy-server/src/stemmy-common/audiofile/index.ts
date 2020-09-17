@@ -126,7 +126,6 @@ export class Decoder {
 
     var himant: number = this.readIntB(data, offset + 2, 4);
     var lomant: number = this.readIntB(data, offset + 6, 4);
-    console.log('himant: ', himant, ' lomant: ', lomant, ' expon: ', expon);
     var value;
     if (expon == 0 && himant == 0 && lomant == 0) {
       value = 0;
@@ -136,7 +135,6 @@ export class Decoder {
       expon -= 16383;
       value = (himant * 0x100000000 + lomant) * Math.pow(2, expon - 63);
     }
-    console.log(sign * value);
     return sign * value;
   }
 }
@@ -269,7 +267,7 @@ export class AIFFDecoder extends Decoder {
 
     var fileLength = chunk.length;
     fileLength += 8;
-    console.log('file length: ', fileLength);
+    // ('file length: ', fileLength);
 
     var aiff = this.readString(data, offset, 4);
     offset += 4;
@@ -279,43 +277,43 @@ export class AIFFDecoder extends Decoder {
     }
 
     while (offset < fileLength) {
-      console.log('starting while loop at offset ', offset);
-      console.log('reading data chunk');
+      // console.log('starting while loop at offset ', offset);
+      // console.log('reading data chunk');
       var chunk = this.readChunkHeaderB(data, offset);
-      console.log(chunk);
+      // console.log(chunk);
       offset += 8;
       if (chunk.name == 'COMM') {
         // Number of channels
         numberOfChannels = this.readIntB(data, offset, 2);
         offset += 2;
-        console.log('number of channels: ', numberOfChannels);
+        // console.log('number of channels: ', numberOfChannels);
 
         // Number of samples
         length = this.readIntB(data, offset, 4);
         offset += 4;
-        console.log('number of samples: ', length);
+        // console.log('number of samples: ', length);
 
         for (var i = 0; i < numberOfChannels; i++) {
           decoded.channels.push(new Float32Array(length));
         }
 
-        console.log(
-          'added float32arrays to decoded.channels: ',
-          decoded.channels.length
-        );
+        // // console.log(
+        //   'added float32arrays to decoded.channels: ',
+        //   decoded.channels.length
+        // );
 
         // Bit depth
         bitDepth = this.readIntB(data, offset, 2);
         bytesPerSample = bitDepth / 8;
         offset += 2;
 
-        console.log('bit depth: ', bitDepth);
+        // console.log('bit depth: ', bitDepth);
 
         // Sample rate
         sampleRate = this.readFloatB(data, offset);
         offset += 10;
 
-        console.log('sample rate: ', sampleRate);
+        // console.log('sample rate: ', sampleRate);
       } else if (chunk.name == 'SSND') {
         // Data offset
         var dataOffset = this.readIntB(data, offset, 4);
@@ -340,7 +338,7 @@ export class AIFFDecoder extends Decoder {
             if (value >= range) {
               value |= ~(range - 1);
             }
-            console.log(value, range, value / range);
+            // console.log(value, range, value / range);
             // Scale range to -1 to 1
             channel[j] = value / range;
           }
