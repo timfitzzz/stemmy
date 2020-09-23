@@ -10,7 +10,8 @@
     "lint": "tslint 'src/**/*.{ts,tsx}'",
     "start": "npm run develop",
     "serve": "gatsby serve",
-    "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\""
+    "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\"",
+    "update-schema": "apollo schema:download --endpoint=https://localhost:8084/graphql/ graphql-schema.json"
   },
   "dependencies": {
     "@apollo/client": "^3.2.0",
@@ -33,10 +34,12 @@
     "gatsby-source-filesystem": "^2.3.23",
     "gatsby-transformer-sharp": "^2.5.12",
     "react": "^16.13.1",
+    "react-compound-slider": "^2.5.0",
     "react-dom": "^16.13.1",
     "react-helmet": "^5.2.1",
     "styled-components": "^4.4.1",
-    "typescript": "^3.9.7"
+    "typescript": "^3.9.7",
+    "verbal-id": "^0.0.4"
   },
   "devDependencies": {
     "prettier": "^1.19.1",

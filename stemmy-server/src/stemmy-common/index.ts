@@ -18,7 +18,7 @@ export enum PngShapes {
   'flat',
 }
 
-export interface AudioEntityProps {
+export abstract class AudioEntityProps {
   id?: string;
   fileName?: string;
   pngs?: png[];
@@ -26,7 +26,7 @@ export interface AudioEntityProps {
   audioData?: any;
 }
 
-export interface LoopProps extends AudioEntityProps {
+export abstract class LoopProps extends AudioEntityProps {
   originalProjectId?: string;
   decay?: number;
   loopStartTime?: number;
@@ -34,7 +34,7 @@ export interface LoopProps extends AudioEntityProps {
   originalScale?: number;
 }
 
-export type ProjectClockSettings = {
+export abstract class ProjectClockSettings {
   BPM?: number;
   BPMIsGuessed?: boolean;
   beatsPerBar?: number;
@@ -42,16 +42,16 @@ export type ProjectClockSettings = {
   lengthIsSet?: boolean;
   multiplier?: number;
   originalBPM?: number;
-};
+}
 
-export interface ProjectProps {
+export abstract class ProjectProps {
   id?: string;
   tracks?: string[];
   clock?: ProjectClockSettings;
   name?: string;
 }
 
-export interface ProjectTrackProps {
+export abstract class ProjectTrackProps {
   id?: string;
   projectId?: string;
   entityType?: audioEntityTypes;
@@ -64,7 +64,7 @@ export interface ProjectTrackProps {
   volume?: number;
 }
 
-export interface trackBundle {
+export abstract class trackBundle {
   track: ProjectTrackProps;
   audioEntity?: AudioEntityProps;
 }

@@ -1,12 +1,22 @@
 import { Inject } from '@tsed/di';
 import { ResolverService } from '@tsed/graphql';
-import { Arg, Args, Query, Mutation } from 'type-graphql';
+import { Arg, Args, Query, Mutation, Field, ObjectType } from 'type-graphql';
 import { TracksService } from '../../services/TracksService';
 import { TrackSchema } from '../../models/TrackSchema';
 import { InternalServerError, NotFound } from '@tsed/exceptions';
 import { AddProjectInput } from '../inputs/AddProjectInput';
-import { trackBundle, ProjectTrackProps } from '../../stemmy-common';
+import { ProjectTrackProps } from '../../stemmy-common';
 import { AddTrackInput } from '../inputs/AddTrackInput';
+import { LoopSchema } from '../../models/LoopSchema';
+
+@ObjectType()
+abstract class trackBundle {
+  @Field((type) => TrackSchema)
+  track: TrackSchema;
+
+  @Field((type) => LoopSchema)
+  audioEntity?: LoopSchema;
+}
 
 @ResolverService(TrackSchema)
 export class TrackResolver {
@@ -20,6 +30,14 @@ export class TrackResolver {
       throw new NotFound(`Track id ${id} not found`);
     }
     return track;
+  }
+
+  @Query((returns) => [trackBundle])
+  async tracks(@Arg('ids', (type) => [String]) ids: string[]) {
+    const tracks = await this.tracksService.findByIds(ids);
+    if (tracks == undefined) {
+      throw new NotFound(`One or more of provided ids not found`);
+    }
   }
 
   @Query((returns) => [TrackSchema])

@@ -8,23 +8,13 @@ import Layout from '../layout/index'
 // Components
 import Image from '../components/Image'
 import Heading from '../components/Heading'
+import { gql, useQuery } from '@apollo/client'
+
+import ProjectPlayer, { ProjectPlayerProps } from '../components/ProjectPlayer'
 
 interface IndexPageProps {
   location: {
     pathname: string
-  }
-  data: {
-    image: {
-      childImageSharp: {
-        fluid: any
-      }
-    }
-    site: {
-      siteMetadata: {
-        title: string
-        description: string
-      }
-    }
   }
 }
 
@@ -33,37 +23,48 @@ const Wrapper = styled.div`
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
+  align-items: left;
+  justify-content: left;
   padding: ${p => p.theme.spacing.unit * 3}px;
-  background: #003580;
+  background: ${p => p.theme.palette.darkPrimary};
 `
 
-export default ({ data, location }: IndexPageProps) => {
-  const { image, site } = data
-  return (
-    <Layout location={location}>
-      <Wrapper>
-        <Image img={image.childImageSharp} />
-        <Heading
-          title={site.siteMetadata.title}
-          subtitle={site.siteMetadata.description}
-        />
-      </Wrapper>
-    </Layout>
-  )
-}
-
-export const indexPageQuery = graphql`
-  query IndexPageQuery {
-    image: file(relativePath: { eq: "icon.png" }) {
-      ...fluidImage
-    }
-    site {
-      siteMetadata {
-        title
-        description
+const GET_PROJECTS_PAGE = gql`
+  query getProjectsPage($page: Float, $perPage: Float) {
+    projectsPage(page: $page, perPage: $perPage) {
+      _id
+      tracks
+      name
+      clock {
+        BPM
+        BPMIsGuessed
+        beatsPerBar
+        length
+        lengthIsSet
+        multiplier
+        originalBPM
       }
     }
   }
 `
+
+export default ({ location }: IndexPageProps) => {
+  const { data } = useQuery(GET_PROJECTS_PAGE, {
+    variables: {
+      page: 1,
+      perPage: 5,
+    },
+  })
+  console.log('projects :', data)
+
+  return (
+    <Layout location={location}>
+      <Wrapper>
+        {data &&
+          data.projectsPage.map((project: ProjectPlayerProps) => (
+            <ProjectPlayer {...project} />
+          ))}
+      </Wrapper>
+    </Layout>
+  )
+}

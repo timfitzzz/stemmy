@@ -102,7 +102,13 @@ type Query {
   projectsPage(perPage: Float, page: Float): [ProjectSchema!]!
   allProjects: [ProjectSchema!]!
   track(id: String): TrackSchema!
+  tracks(ids: [String!]!): [trackBundle!]!
   tracksPage(perPage: Float, page: Float): [TrackSchema!]!
+}
+
+type trackBundle {
+  track: TrackSchema!
+  audioEntity: LoopSchema!
 }
 
 type TrackSchema {

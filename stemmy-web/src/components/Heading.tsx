@@ -9,15 +9,19 @@ interface IHeadingProps {
 const Wrapper = styled.div`
   display: flex;
   flex-direction: column;
-  text-align: center;
+  text-align: left;
   color: white;
+  width: 100%;
 `
 
 const Title = styled.h1`
-  margin-top: 30px;
+  margin-top: 2px;
+  margin-bottom: 1px;
 `
 
-const Subtitle = styled.p``
+const Subtitle = styled.p`
+  margin-top: 2px;
+`
 
 export default (props: IHeadingProps) => {
   const { title, subtitle } = props

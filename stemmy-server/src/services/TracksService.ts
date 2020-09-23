@@ -88,6 +88,14 @@ export class TracksService {
     }
   }
 
+  async findByIds(ids: string[]): Promise<trackBundle[]> {
+    return Promise.all<trackBundle>(
+      ids.map(async (id: string) => {
+        return await this.getBundleById(id);
+      })
+    );
+  }
+
   async getBundlesById(ids: string[]): Promise<trackBundle[]> {
     return new Promise(async (resolve, reject) => {
       try {

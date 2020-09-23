@@ -2,16 +2,22 @@ const path = require('path')
 
 module.exports = {
   siteMetadata: {
-    site: `Gnonce-starter`,
-    title: `Gatsby Starter Gnonce`,
-    titleTemplate: `%s - Gnonce`,
-    description: `Gatsby + Typescript + Styled Components = 💖`,
+    site: `Stemmy`,
+    title: `stemmy`,
+    titleTemplate: `%s - Skeletal Beats`,
+    description: `beat them bones`,
     siteUrl: `https://gatsby-starter-gnonce.netlify.com/`,
     language: `en`,
     color: `#003580`,
-    twitter: 'gnonce',
+    twitter: 'stemmy',
   },
   plugins: [
+    {
+      resolve: 'gatsby-plugin-apollo',
+      options: {
+        uri: 'http://localhost:8084/graphql',
+      },
+    },
     {
       resolve: `gatsby-source-filesystem`,
       options: {
