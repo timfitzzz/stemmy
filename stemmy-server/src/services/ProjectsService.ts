@@ -10,6 +10,7 @@ import { trackBundle } from '../stemmy-common';
 import mongoose from 'mongoose';
 import { rejects } from 'assert';
 import { resolve } from 'path';
+import { TrackSchema } from '../models/TrackSchema';
 
 @Service()
 export class ProjectsService {
@@ -73,7 +74,7 @@ export class ProjectsService {
 
   async save(props: ProjectProps): Promise<ProjectSchema | null> {
     if (props) {
-      const newProject: ProjectSchema = {
+      const newProject: ProjectProps = {
         ...props,
         clock: props.clock || defaultProjectClock(),
         tracks:
@@ -82,12 +83,32 @@ export class ProjectsService {
               return (trackId as unknown) as string;
             })) ||
           [],
-        _id: (props.id as unknown) as string,
       };
 
-      return await this.Project.create(newProject);
+      let newProjectDocument = await this.Project.create(newProject);
+      return newProjectDocument;
     }
     return null;
+  }
+
+  async addTrackToProject(
+    projectId: string,
+    trackId: string
+  ): Promise<ProjectSchema | null> {
+    let track = await this.TracksService.findById(trackId);
+
+    if (track) {
+      let project = await this.Project.findById(projectId);
+      if (project) {
+        project.tracks = [...project.tracks!, trackId];
+        await project.save();
+        return project;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
   async update(props: ProjectProps): Promise<ProjectSchema | null> {
@@ -103,10 +124,9 @@ export class ProjectsService {
         _id: (props.id as unknown) as string,
       };
 
-      return await this.Project.findOneAndUpdate(
-        { id: props.id },
-        updateObject
-      );
+      return this.Project.findOneAndUpdate({ _id: props.id }, updateObject, {
+        new: true,
+      });
     } else {
       return null;
     }

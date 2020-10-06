@@ -1,0 +1,25 @@
+Mixed Mode React
+
+
+KEN WHEELER:
+
+So I was here last year, and it was awesome, and I talked about Fiber renderers. Fiber renderers are custom React renderers -- if you think about something like ReactDOM, which renders, oddly enough, your DOM, Fiber renderers can take components and render other things, and have other base primitives.
+
+You can render pretty much whatever you want -- the way the DOM renderer gets a bunch of HTML and updates the HTML with Browser APIs that nobody uses anymore, you can render anything. You can extend the basic DOM renderer, with some custom HTML, or you can write a new one that renders to whatever you want.
+
+So, when I was here last year I did an emoji renderer, which was an extension of the DOM renderer. You could type things, and if it saw a word that it recognized as emojifiable, it emojified it -- so that was an extension one. And then I did React synth, which would let you use special tags -- which are the components of like an analog-style synth -- via the props, via the components -- it would let you put together a playable synth. It was pretty tight.
+
+But what if you want to mix more than one thing? A lot of times with these renderers, it's just DOM or just React data or just this synth thing.
+
+So you could do something like this, where you have a container and you're doing something in there, and you ReactDOM render that, and then you could do a separate render here. But that sucks. I wouldn't do it -- I wouldn't feel good about doing it, right? And I'll tell you why that sucks. First, you're importing two or more renderers, and that sucks. And it's two non-portal rendering paths -- so it's not cohesive; they don't work together. You do one and then it splits off into the other. 
+
+So what can we do about that? A little thing called Renderless Components, which is -- I don't know if really that's an accurate term. Sometimes they actually do render things, but a lot of the time what they're doing is just kicking off side effects that aren't part of, like, the DOM renderer regularly.
+
+So UI is not just your divs and spans -- so not just the UI layer. But there's a lot more to your UI than just the HTML -- things like WebAudio, Canvas, WebGL -- just about any non-DOM browser API.
+
+So just to give a really simple example of how this works -- it might be something you've even done before, like a stupid little component -- maybe a redirect. When this componentDidMount fires, this will just redirect you to the prop right here -- you could throw this into a render path and it'll redirect you. You could have a little short-circuit operator, like, "ifNotLoggedIn". Or you could just use React Router like an adult.
+
+And then you could have something like this -- which I've actually used this pretty often; it's a log component.
+
+But that's not really what I'm here to talk about today. This one ups the ante a little. So if you wanted to do, like, a debrief chart in Canvas, 
+

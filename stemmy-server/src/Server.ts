@@ -32,6 +32,7 @@ export const rootDir = __dirname;
   httpsPort: false, // CHANGE
   mount: {
     '/rest': [`${rootDir}/controllers/**/*.ts`],
+    '/pngs': [`${rootDir}/controllers/PngsController.ts`],
   },
   componentsScan: ['${rootDir}/graphql/**/*.ts'],
   swagger: [

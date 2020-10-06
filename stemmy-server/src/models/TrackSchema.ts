@@ -14,8 +14,8 @@ export class TrackSchema {
 
   @Field((type) => String)
   @Required()
-  @Ref('project')
-  projectId: Ref<'project'>;
+  @Ref('Project')
+  projectId: Ref<'Project'>;
 
   @Field({ nullable: true })
   @Required()

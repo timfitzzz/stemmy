@@ -17,6 +17,15 @@ import { Summary } from '@tsed/swagger';
 import { NotFound, InternalServerError } from '@tsed/exceptions';
 import { MultipartFile } from '@tsed/multipartfiles';
 import { trackBundle } from '../stemmy-common';
+import { mapSchemaToProps } from './utils';
+
+export const convertTrackSchemaToProjectTrackProps: (
+  source: TrackSchema
+) => ProjectTrackProps = mapSchemaToProps<ProjectTrackProps>([
+  ['projectId', 'projectId'],
+  ['entityId', 'entityId'],
+  ['id', '_id'],
+]);
 
 @Controller('/tracks')
 export class TracksController {
@@ -50,7 +59,7 @@ export class TracksController {
     @PathParams('id')
     id: string
   ): Promise<trackBundle | trackBundle[] | null> {
-    return this.tracksService.findById(id).catch((err) => {
+    return this.tracksService.findBundleById(id).catch((err) => {
       throw new NotFound('Track not found');
     });
   }
@@ -62,8 +71,19 @@ export class TracksController {
     @Description('Body parameters')
     @BodyParams()
     params: ProjectTrackProps
-  ): Promise<TrackSchema | null> {
-    return this.tracksService.save(params).catch((err) => {
+  ): Promise<ProjectTrackProps | null> {
+    return new Promise<ProjectTrackProps | null>(async (res, rej) => {
+      try {
+        let newTrack = await this.tracksService.save(params);
+        if (newTrack) {
+          res(convertTrackSchemaToProjectTrackProps(newTrack));
+        } else {
+          throw new Error('Could not generate new track.');
+        }
+      } catch (err) {
+        rej(err);
+      }
+    }).catch((err) => {
       throw new InternalServerError(err);
     });
   }

@@ -15,10 +15,10 @@ export interface ProjectClockSettings {
 }
 
 export interface ProjectPlayerProps {
-  _id: string
-  tracks: string[]
-  clock: ProjectClockSettings
-  name: string
+  id?: string
+  tracks?: string[]
+  clock?: ProjectClockSettings
+  name?: string
 }
 
 const ProjectPlayerContainer = styled.div`
@@ -45,7 +45,7 @@ const GET_TRACKS = gql`
   }
 `
 
-export default ({ _id, tracks, clock, name }: ProjectPlayerProps) => {
+export default ({ id, tracks, clock, name }: ProjectPlayerProps) => {
   const { data: queryData } = useQuery(GET_TRACKS, {
     variables: {
       ids: tracks,

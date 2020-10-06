@@ -1,3 +1,4 @@
+import { Property } from '@tsed/common';
 import { png } from '../models/LoopSchema';
 export * from './AudioFileReader';
 export * from './getFileInfoFromHeader';
@@ -45,22 +46,48 @@ export abstract class ProjectClockSettings {
 }
 
 export abstract class ProjectProps {
+  @Property()
   id?: string;
+
+  @Property()
   tracks?: string[];
+
+  @Property()
   clock?: ProjectClockSettings;
+
+  @Property()
   name?: string;
 }
 
 export abstract class ProjectTrackProps {
+  @Property()
   id?: string;
-  projectId?: string;
+
+  @Property()
+  projectId: string;
+
+  @Property()
   entityType?: audioEntityTypes;
+
+  @Property()
   entityId?: string;
+
+  @Property()
   pan?: number;
+
+  @Property()
   playing?: boolean;
+
+  @Property()
   reverse?: boolean;
+
+  @Property()
   scale?: number;
+
+  @Property()
   synchronize?: boolean;
+
+  @Property()
   volume?: number;
 }
 

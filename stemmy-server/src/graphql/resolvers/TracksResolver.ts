@@ -34,7 +34,7 @@ export class TrackResolver {
 
   @Query((returns) => [trackBundle])
   async tracks(@Arg('ids', (type) => [String]) ids: string[]) {
-    const tracks = await this.tracksService.findByIds(ids);
+    const tracks = await this.tracksService.findBundleByIds(ids);
     if (tracks == undefined) {
       throw new NotFound(`One or more of provided ids not found`);
     }

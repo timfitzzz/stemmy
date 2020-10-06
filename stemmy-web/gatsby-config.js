@@ -5,7 +5,7 @@ module.exports = {
     site: `Stemmy`,
     title: `stemmy`,
     titleTemplate: `%s - Skeletal Beats`,
-    description: `beat them bones`,
+    description: `total mood`,
     siteUrl: `https://gatsby-starter-gnonce.netlify.com/`,
     language: `en`,
     color: `#003580`,

@@ -13,6 +13,8 @@ import ProjectPlayer from '../components/ProjectPlayer'
 import { graphql, useStaticQuery } from 'gatsby'
 import LeftSidebar from '../components/LeftSidebar'
 import BodyContainer from '../components/BodyContainer'
+import { Provider } from 'react-redux'
+import { store } from '../store'
 
 interface ILayoutProps {
   children: any

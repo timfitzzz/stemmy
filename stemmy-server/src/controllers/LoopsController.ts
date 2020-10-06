@@ -113,6 +113,8 @@ export class LoopsController {
         res.type('wav');
         res.sendFile(filePathPath, {}, (err) => {
           if (err) {
+            res.sendStatus(500);
+            next();
           }
           next();
         });
@@ -156,6 +158,7 @@ export class LoopsController {
     @MultipartFile('files')
     files: Express.Multer.File[]
   ): Promise<LoopProps[] | LoopProps | null> {
+    console.log(loopData);
     const loops: LoopProps[] = JSON.parse(loopData);
     if (loops) {
       const output: Promise<LoopProps[]> = Promise.all<LoopProps>(
@@ -220,21 +223,21 @@ export class LoopsController {
     @PathParams('id')
     id: string,
     @Description('Body parameters')
-    @BodyParams()
-    params: LoopProps,
+    @BodyParams('loopData')
+    loopData: LoopProps,
     @MultipartFile('file')
     file?: Express.Multer.File
   ): Promise<LoopSchema | null> {
     if (file) {
-      params.fileName = file.filename;
+      loopData.fileName = file.filename;
       const audioFileProcessor = new AudioFileProcessor(file.path);
-      params.pngs = await audioFileProcessor.createPngs();
+      loopData.pngs = await audioFileProcessor.createPngs();
     }
 
     return this.loopsService.find(id).then((result: LoopSchema) =>
       this.loopsService
         .save({
-          ...params,
+          ...loopData,
           ...result,
           originalProjectId: result.originalProjectId.toString(),
         })

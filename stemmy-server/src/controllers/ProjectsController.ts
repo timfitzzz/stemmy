@@ -92,6 +92,7 @@ export class ProjectsController {
     @BodyParams('params')
     params: ProjectProps
   ): Promise<ProjectSchema | null> {
+    console.log(params);
     return this.projectsService.save(params).catch((err) => {
       throw new InternalServerError(err);
     });
@@ -106,11 +107,18 @@ export class ProjectsController {
     id: string,
     @Description('Body parameters')
     @BodyParams()
-    params: ProjectProps
+    params: any
   ): Promise<ProjectSchema | null> {
-    return this.projectsService.update({
-      ...params,
-      id,
-    });
+    console.log('reached update method');
+    console.log('update: ', params);
+
+    return this.projectsService
+      .update({
+        ...params,
+        id,
+      })
+      .catch((err) => {
+        throw new Error('failed to update document');
+      });
   }
 }

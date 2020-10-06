@@ -12,8 +12,8 @@ import {
 import { audioEntityTypes } from '../stemmy-common';
 import { LoopSchema } from '../models/LoopSchema';
 import { LoopsService } from './LoopsService';
-import { resolve } from 'path';
-import { isDate } from 'util';
+import { ProjectsService } from './ProjectsService';
+import { ProjectSchema } from '../models/ProjectSchema';
 
 export function convertTrackSchemaToProjectTrackProps(
   track: TrackSchema
@@ -37,6 +37,8 @@ export class TracksService {
   private Track: MongooseModel<TrackSchema>;
   @Inject(LoopsService)
   private LoopsService: LoopsService;
+  @Inject(ProjectSchema)
+  private Project: MongooseModel<ProjectSchema>;
 
   async getPage(page: number, perPage: number): Promise<TrackSchema[]> {
     return await this.Track.find(
@@ -80,7 +82,11 @@ export class TracksService {
     });
   }
 
-  async findById(id: string | undefined): Promise<trackBundle | null> {
+  async findById(id: string | undefined): Promise<TrackSchema | null> {
+    return await this.Track.findById(id);
+  }
+
+  async findBundleById(id: string | undefined): Promise<trackBundle | null> {
     if (id) {
       return this.getBundleById(id);
     } else {
@@ -88,7 +94,7 @@ export class TracksService {
     }
   }
 
-  async findByIds(ids: string[]): Promise<trackBundle[]> {
+  async findBundleByIds(ids: string[]): Promise<trackBundle[]> {
     return Promise.all<trackBundle>(
       ids.map(async (id: string) => {
         return await this.getBundleById(id);
@@ -136,6 +142,26 @@ export class TracksService {
     });
   }
 
+  async addTrackToProject(
+    projectId: string,
+    trackId: string
+  ): Promise<ProjectSchema | null> {
+    let track = await this.findById(trackId);
+
+    if (track) {
+      let project = await this.Project.findById(projectId);
+      if (project) {
+        project.tracks = [...project.tracks!, trackId];
+        await project.save();
+        return project;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
   async save(props: ProjectTrackProps): Promise<TrackSchema | null> {
     if (props && typeof props.entityType !== undefined) {
       const newTrack: TrackSchema = {
@@ -152,9 +178,21 @@ export class TracksService {
         _id: (props.id as unknown) as string,
       };
 
-      return await this.Track.create(newTrack);
+      return new Promise<TrackSchema | null>(async (res, rej) => {
+        try {
+          let createdTrack = await this.Track.create(newTrack);
+          let updatedProject = await this.addTrackToProject(
+            createdTrack.projectId,
+            createdTrack.id
+          );
+          res(createdTrack);
+        } catch (err) {
+          rej(err);
+        }
+      });
+    } else {
+      return null;
     }
-    return null;
   }
 }
 

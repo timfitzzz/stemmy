@@ -1,5 +1,6 @@
 import React, { ChangeEvent } from 'react'
 import styled from 'styled-components'
+import { NodeBuilderFlags } from 'typescript'
 
 const sliderThumbStyles = (props: ISliderContainerProps) => `
   width: 25px;
@@ -35,13 +36,19 @@ const SliderContainer = styled.div`
   }
 `
 
+const SliderInput = styled.input`
+  width: 100%;
+`
+
 interface ISliderProps {
   value: number
   min: number
   max: number
-  setValue: (value: number) => void
-  className: string
+  setValue?: (value: number) => void
+  className?: string
   thumbColor: string
+  step: number
+  onDragEnd: () => void
 }
 
 interface ISliderContainerProps {
@@ -53,20 +60,25 @@ export const Slider: React.FC<ISliderProps> = ({
   min,
   max,
   setValue,
+  step,
   className,
   thumbColor,
+  onDragEnd,
 }: ISliderProps) => {
   const handleOnChange = (e: ChangeEvent<HTMLInputElement>) =>
-    setValue(parseFloat(e.target.value))
+    setValue && setValue(parseFloat(e.target.value))
 
   return (
     <SliderContainer className={className} thumbColor={thumbColor}>
-      <input
+      <SliderInput
         type="range"
         min={min}
         max={max}
         value={value}
+        step={step}
         onChange={handleOnChange}
+        onMouseUp={onDragEnd}
+        onTouchEnd={onDragEnd}
       />
     </SliderContainer>
   )

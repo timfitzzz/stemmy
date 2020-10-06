@@ -1,3 +1,4 @@
+import { Link } from 'gatsby'
 import React from 'react'
 import styled from 'styled-components'
 
@@ -27,7 +28,9 @@ export default (props: IHeadingProps) => {
   const { title, subtitle } = props
   return (
     <Wrapper>
-      <Title>{title}</Title>
+      <Title>
+        <Link to="/">{title}</Link>
+      </Title>
       <Subtitle>{subtitle}</Subtitle>
     </Wrapper>
   )

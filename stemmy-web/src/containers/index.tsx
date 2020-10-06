@@ -1,4 +1,4 @@
-import * as React from 'react'
+import React, { useEffect, useState } from 'react'
 import { graphql } from 'gatsby'
 import styled from 'styled-components'
 
@@ -8,15 +8,24 @@ import Layout from '../layout/index'
 // Components
 import Image from '../components/Image'
 import Heading from '../components/Heading'
-import { gql, useQuery } from '@apollo/client'
+import { useQuery } from '@apollo/client'
+import { GET_PROJECTS_PAGE } from '../gql/queries'
 
 import ProjectPlayer, { ProjectPlayerProps } from '../components/ProjectPlayer'
-
-interface IndexPageProps {
-  location: {
-    pathname: string
-  }
-}
+import { RootState } from '../store'
+import { getProjectsPage } from '../rest'
+import {
+  connect,
+  ConnectedProps,
+  useDispatch,
+  useSelector,
+  useStore,
+} from 'react-redux'
+import { ProjectProps } from '../types'
+import { RootDispatcher } from '../store'
+import { Dispatch } from 'redux'
+import { ProjectActions } from '../store/projects'
+import { loadProjectsPage } from '../store/projects/actions'
 
 const Wrapper = styled.div`
   width: 100%;
@@ -29,40 +38,47 @@ const Wrapper = styled.div`
   background: ${p => p.theme.palette.darkPrimary};
 `
 
-const GET_PROJECTS_PAGE = gql`
-  query getProjectsPage($page: Float, $perPage: Float) {
-    projectsPage(page: $page, perPage: $perPage) {
-      _id
-      tracks
-      name
-      clock {
-        BPM
-        BPMIsGuessed
-        beatsPerBar
-        length
-        lengthIsSet
-        multiplier
-        originalBPM
-      }
-    }
+const mapState = (state: RootState) => ({
+  projects: state.projects,
+})
+
+const mapDispatch = {
+  loadProjectsPage,
+}
+
+const connector = connect(mapState, mapDispatch)
+type propsFromRedux = ConnectedProps<typeof connector>
+
+type IndexPageProps = propsFromRedux & {
+  location: {
+    pathname: string
   }
-`
+}
 
 export default ({ location }: IndexPageProps) => {
-  const { data } = useQuery(GET_PROJECTS_PAGE, {
-    variables: {
-      page: 1,
-      perPage: 5,
-    },
-  })
-  console.log('projects :', data)
+  const projects = useSelector<RootState, { [key: string]: ProjectProps }>(
+    state => state.projects.byId
+  )
+
+  const { pageNumber, perPage, currentPageIds } = useSelector<
+    RootState,
+    { pageNumber: number; perPage: number; currentPageIds: string[] }
+  >(state => state.projects.page)
+
+  const projectsDispatch = useDispatch()
+
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    projectsDispatch(loadProjectsPage(pageNumber, perPage))
+  }, [])
 
   return (
     <Layout location={location}>
       <Wrapper>
-        {data &&
-          data.projectsPage.map((project: ProjectPlayerProps) => (
-            <ProjectPlayer {...project} />
+        {currentPageIds &&
+          currentPageIds.map((projectId: string) => (
+            <ProjectPlayer {...projects[projectId]} />
           ))}
       </Wrapper>
     </Layout>
