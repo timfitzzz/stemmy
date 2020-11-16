@@ -21,6 +21,7 @@
     "@types/react-helmet": "^5.0.16",
     "@types/react-redux": "^7.1.9",
     "@types/styled-components": "^4.4.3",
+    "@types/wavesurfer.js": "^3.3.1",
     "apollo-thunk": "^1.1.0",
     "axios": "^0.20.0",
     "babel-plugin-styled-components": "^1.11.1",
@@ -37,23 +38,28 @@
     "gatsby-plugin-typescript": "^2.4.16",
     "gatsby-source-filesystem": "^2.3.23",
     "gatsby-transformer-sharp": "^2.5.12",
+    "konva": "^7.1.6",
     "react": "^16.13.1",
     "react-compound-slider": "^2.5.0",
     "react-dom": "^16.13.1",
     "react-helmet": "^5.2.1",
+    "react-konva": "^16.13.1",
     "react-redux": "^7.2.1",
     "redux": "^4.0.5",
     "redux-thunk": "^2.3.0",
     "styled-components": "^4.4.1",
     "typescript": "^3.9.7",
-    "verbal-id": "^0.0.4"
+    "use-image": "^1.0.6",
+    "verbal-id": "^0.0.4",
+    "wavesurfer.js": "^4.2.0"
   },
   "devDependencies": {
     "prettier": "^1.19.1",
     "tslint": "^5.20.1",
     "tslint-config-airbnb": "^5.11.2",
     "tslint-config-prettier": "^1.18.0",
-    "tslint-react": "^4.1.0"
+    "tslint-react": "^4.1.0",
+    "tslint-react-hooks": "^2.2.2"
   },
   "browserslist": [
     ">0.2%",

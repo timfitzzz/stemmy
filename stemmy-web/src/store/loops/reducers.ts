@@ -5,6 +5,12 @@ const initialState: ILoopStore = {
   saving: [],
   errors: [],
   byId: {},
+  loading: [],
+}
+
+function remStr(array: string[], string: string): string[] {
+  let index = array.indexOf(string)
+  return array.slice(0, index).concat(array.slice(index + 1))
 }
 
 export function loopsReducer(
@@ -34,10 +40,7 @@ export function loopsReducer(
       return {
         ...state,
         saving: getNewSavingWithoutLoop(action.payload[0]),
-        errors: [
-          { timestamp: new Date(), error: action.payload[1] },
-          ...state.errors,
-        ],
+        errors: [action.payload[1], ...state.errors],
       }
     case LoopActions.SAVE_LOOP_SUCCESS:
       return {
@@ -48,6 +51,29 @@ export function loopsReducer(
           [action.payload.afterSave.id!]: action.payload.afterSave,
         },
       }
+    case LoopActions.GET_LOOP: {
+      return {
+        ...state,
+        loading: [...state.loading, action.payload.id!],
+      }
+    }
+    case LoopActions.GET_LOOP_FAIL: {
+      return {
+        ...state,
+        loading: remStr(state.loading, action.payload[0].id!),
+        errors: [action.payload[1], ...state.errors],
+      }
+    }
+    case LoopActions.GET_LOOP_SUCCESS: {
+      return {
+        ...state,
+        loading: remStr(state.loading, action.payload.id!),
+        byId: {
+          ...state.byId,
+          [action.payload.id!]: action.payload,
+        },
+      }
+    }
     default:
       return state
   }

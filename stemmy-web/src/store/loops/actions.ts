@@ -24,7 +24,7 @@ export function saveLoopDataFail(
 ): LoopActionTypes {
   return {
     type: LoopActions.SAVE_LOOP_FAIL,
-    payload: [loopData, err],
+    payload: [loopData, { timestamp: new Date(), error: err.toString() }],
   }
 }
 
@@ -35,6 +35,30 @@ export function saveLoopDataSuccess(
   return {
     type: LoopActions.SAVE_LOOP_SUCCESS,
     payload: { beforeSave, afterSave },
+  }
+}
+
+export function getLoop({ id }: Partial<LoopProps>): LoopActionTypes {
+  return {
+    type: LoopActions.GET_LOOP,
+    payload: { id },
+  }
+}
+
+export function getLoopFail(
+  { id }: Partial<LoopProps>,
+  err: Error
+): LoopActionTypes {
+  return {
+    type: LoopActions.GET_LOOP_FAIL,
+    payload: [{ id }, { timestamp: new Date(), error: err.toString() }],
+  }
+}
+
+export function getLoopSuccess(loopData: LoopProps): LoopActionTypes {
+  return {
+    type: LoopActions.GET_LOOP_SUCCESS,
+    payload: loopData,
   }
 }
 

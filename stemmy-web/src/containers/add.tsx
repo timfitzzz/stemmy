@@ -30,7 +30,8 @@ const Wrapper = styled.div`
   flex-direction: column;
   align-items: left;
   justify-content: left;
-  padding: ${p => p.theme.spacing.unit * 3}px;
+  padding-left: 35px;
+  padding-top: ${p => p.theme.spacing.unit * 3}px;
   background: ${p => p.theme.palette.darkPrimary};
 `
 
@@ -52,55 +53,10 @@ type AddPageProps = /* propsFromRedux  & */ {
 }
 
 export default ({ location }: AddPageProps) => {
-  const projectsDispatch = useDispatch()
-
-  const [loading, setLoading] = useState(true)
-
-  const creatingProjectId: string | null = useSelector<
-    RootState,
-    string | null
-  >(state => state.projects.creatingId)
-
-  let protoProject: ProjectProps | null = useSelector<
-    RootState,
-    ProjectProps | null
-  >(state => {
-    if (!creatingProjectId) {
-      return null
-    } else {
-      return state.projects.byId[creatingProjectId]
-    }
-  })
-
-  // const projectLoading: boolean = useSelector<RootState, boolean>(
-  //   state => state.projects.saving.loading
-  // )
-
-  useEffect(() => {
-    if (!creatingProjectId) {
-      projectsDispatch(createNewProject({ name: verbalId.create(undefined) }))
-    } else if (creatingProjectId && loading) {
-      setLoading(false)
-    }
-  })
-
   return (
     <Layout location={location}>
       <Wrapper>
-        Add Project
-        {loading || !creatingProjectId ? (
-          <div>loading...</div>
-        ) : (
-          <AddProject
-            saveProject={(project: ProjectProps) => {
-              projectsDispatch(saveProjectToServer(project))
-            }}
-            upsertProject={(project: ProjectProps) => {
-              projectsDispatch(upsertProject(project))
-            }}
-            project={protoProject || {}}
-          ></AddProject>
-        )}
+        <AddProject />
       </Wrapper>
     </Layout>
   )

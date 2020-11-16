@@ -73,6 +73,10 @@ export function saveTrackToDb(track: TrackProps): Promise<AxiosTrackResponse> {
   }
 }
 
+export function getLoopById(id: string): Promise<AxiosTrackResponse> {
+  return axios.get(`${REST_PREFIX}/loops/${id}`)
+}
+
 function generateLoopFormData(
   loopData: LoopProps[],
   audioFileData?: AudioFileData[]

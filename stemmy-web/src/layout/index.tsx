@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 import styled, { ThemeProvider } from 'styled-components'
 
 import theme from '../styles/theme'
@@ -15,6 +15,8 @@ import LeftSidebar from '../components/LeftSidebar'
 import BodyContainer from '../components/BodyContainer'
 import { Provider } from 'react-redux'
 import { store } from '../store'
+import { audioContext as AudioContext } from '../helpers'
+import { AudioProvider } from '../helpers/audioContext'
 
 interface ILayoutProps {
   children: any
@@ -54,13 +56,15 @@ export default ({ children, location }: ILayoutProps) => {
       <GlobalStyles />
       <Head pathname={location.pathname} />
       <ThemeProvider theme={theme}>
-        <LeftSidebar
-          userName={'userName'}
-          menuItems={[]}
-          title={site.siteMetadata.title}
-          subtitle={site.siteMetadata.description}
-        />
-        <BodyContainer>{children}</BodyContainer>
+        <AudioProvider>
+          <LeftSidebar
+            userName={'userName'}
+            menuItems={[]}
+            title={site.siteMetadata.title}
+            subtitle={site.siteMetadata.description}
+          />
+          <BodyContainer>{children}</BodyContainer>
+        </AudioProvider>
       </ThemeProvider>
     </Wrapper>
   )

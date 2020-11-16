@@ -75,33 +75,6 @@ export const BPMDisplay = ({
         {originalBPM && `Original: ${stringifyBPM(originalBPM)}. `}
         {`Fine adjust = arrow keys`}
       </SettingDescription>
-
-      {/* <BPMSlider
-        domain={[30, 300]}
-        step={0.01}
-        mode={1}
-        values={[BPM]}
-        onChange={
-          setBPM
-            ? values => {
-                console.log(values)
-                if (values) {
-                  setBPM(values[0])
-                }
-              }
-            : values => {}
-        }
-        onUpdate={
-          setBPM
-            ? values => {
-                console.log(values)
-                if (values) {
-                  setBPM(values[0])
-                }
-              }
-            : values => {}
-        }
-      /> */}
     </BPMDisplayContainer>
   )
 }

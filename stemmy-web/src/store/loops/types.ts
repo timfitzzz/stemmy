@@ -4,25 +4,44 @@ export enum LoopActions {
   UPSERT_LOOP = 'UPSERT_LOOP',
   SAVE_LOOP = 'SAVE_LOOP',
   SAVE_LOOP_FAIL = 'SAVE_LOOP_FAIL',
-  SAVE_LOOP_SUCCESS = 'SAVE_LOOP_SUCCESS'
+  SAVE_LOOP_SUCCESS = 'SAVE_LOOP_SUCCESS',
+  GET_LOOP = 'GET_LOOP',
+  GET_LOOP_FAIL = 'GET_LOOP_FAIL',
+  GET_LOOP_SUCCESS = 'GET_LOOP_SUCCESS',
 }
 
 export type APIError = {
   timestamp: Date
-  error: Error
+  error: string
 }
 
 export interface ILoopStore {
-  saving: LoopProps[]
+  saving: Partial<LoopProps>[]
   errors: APIError[] | []
   byId: {
     [key: string]: LoopProps
   }
+  loading: string[]
 }
 
 export interface UpsertLoopAction {
   type: LoopActions.UPSERT_LOOP
   payload: LoopProps
+}
+
+export interface GetLoopAction {
+  type: LoopActions.GET_LOOP
+  payload: Partial<LoopProps>
+}
+
+export interface GetLoopSuccessAction {
+  type: LoopActions.GET_LOOP_SUCCESS
+  payload: LoopProps
+}
+
+export interface GetLoopFailAction {
+  type: LoopActions.GET_LOOP_FAIL
+  payload: [Partial<LoopProps>, APIError]
 }
 
 export interface SaveLoopAction {
@@ -42,7 +61,7 @@ export interface SaveLoopSuccessAction {
 
 export interface SaveLoopFailAction {
   type: LoopActions.SAVE_LOOP_FAIL
-  payload: [LoopProps, Error]
+  payload: [LoopProps, APIError]
 }
 
 export type LoopActionTypes =
@@ -50,3 +69,6 @@ export type LoopActionTypes =
   | SaveLoopAction
   | SaveLoopFailAction
   | SaveLoopSuccessAction
+  | GetLoopAction
+  | GetLoopFailAction
+  | GetLoopSuccessAction

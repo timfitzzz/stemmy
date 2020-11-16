@@ -18,6 +18,7 @@ const TracksEditorWrapper = styled.div`
 const TracksWrapper = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
 `
 
 interface TracksEditorProps {

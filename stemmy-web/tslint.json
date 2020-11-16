@@ -4,7 +4,8 @@
     "tslint:recommended",
     "tslint-react",
     "tslint-config-airbnb",
-    "tslint-config-prettier"
+    "tslint-config-prettier",
+    "tslint-react-hooks"
   ],
   "jsRules": {},
   "rules": {
@@ -14,7 +15,8 @@
     "prefer-array-literal": false,
     "ordered-imports": false,
     "jsx-no-lambda": false,
-    "object-shorthand-properties-first": false
+    "object-shorthand-properties-first": false,
+    "react-hooks-nesting": "error"
   },
   "rulesDirectory": []
 }

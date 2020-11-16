@@ -4,6 +4,7 @@ import styled from 'styled-components'
 interface IButtonProps {
   text: string
   handler: (event: MouseEvent<HTMLButtonElement>) => void
+  className?: string
 }
 
 const BigButton = styled.button`
@@ -16,9 +17,9 @@ const TextContainer = styled.span`
   font-weight: 600;
 `
 
-export default ({ text, handler }: IButtonProps) => {
+export default ({ text, handler, className }: IButtonProps) => {
   return (
-    <BigButton onClick={handler}>
+    <BigButton className={className} onClick={handler}>
       <TextContainer>{text}</TextContainer>
     </BigButton>
   )

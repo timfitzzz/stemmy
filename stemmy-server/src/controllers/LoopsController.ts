@@ -108,12 +108,15 @@ export class LoopsController {
   ): Promise<void> {
     await this.loopsService.findById(id).then(async (loop) => {
       if (loop && loop.fileName) {
-        let filePath = this.loopsService.getAudioPath(loop.fileName);
-        let filePathPath = resolve(filePath);
+        //let filePath = this.loopsService.getAudioPath(loop.fileName);
+        // let filePathPath = resolve(filePath);
+        let filePathPath = loop.fileName;
+        console.log(loop);
         res.type('wav');
         res.sendFile(filePathPath, {}, (err) => {
+          console.log('error sending file: ', filePathPath, err);
           if (err) {
-            res.sendStatus(500);
+            res.status(500).send(err);
             next();
           }
           next();

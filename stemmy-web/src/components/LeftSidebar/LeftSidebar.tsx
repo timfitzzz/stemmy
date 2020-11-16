@@ -16,6 +16,7 @@ const Wrapper = styled.div`
   padding-top: 5px;
   padding-right: 15px;
   color: ${p => p.theme.palette.darkPrimary};
+  border-right: 10px solid ${p => p.theme.palette.midPrimary};
   h1 {
     color: ${p => p.theme.palette.darkPrimary};
   }
