@@ -57,4 +57,8 @@ export class ProjectSchema {
   @Property()
   @Field()
   name?: string;
+
+  @Property()
+  @Field()
+  draft: boolean;
 }

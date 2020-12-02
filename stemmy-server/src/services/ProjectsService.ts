@@ -69,7 +69,21 @@ export class ProjectsService {
       {},
       { skip: (page - 1) * perPage, limit: perPage }
     );
-    this.Project.find();
+  }
+
+  // TODO: Get userid as prop to filter only user's drafts
+  async getDraftsPage(page: number, perPage: number): Promise<ProjectSchema[]> {
+    return await this.Project.find(
+      { draft: true },
+      {},
+      { skip: (page - 1) * perPage, limit: perPage}
+    );
+  }
+  
+  async getAllDrafts(): Promise<ProjectSchema[]> {
+    return await this.Project.find(
+      { draft: true },
+    )
   }
 
   async save(props: ProjectProps): Promise<ProjectSchema | null> {

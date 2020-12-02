@@ -57,6 +57,9 @@ export abstract class ProjectProps {
 
   @Property()
   name?: string;
+
+  @Property()
+  draft: boolean;
 }
 
 export abstract class ProjectTrackProps {

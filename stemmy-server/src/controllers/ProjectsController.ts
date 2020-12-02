@@ -27,7 +27,7 @@ export class ProjectsController {
     @Description('Which page of results to return')
     @BodyParams('page')
     page: number = 1,
-    @Description('How many pages of results to return')
+    @Description('How many results to return per page')
     @BodyParams('perPage')
     perPage: number = 20
   ): Promise<ProjectSchema[]> {
@@ -38,6 +38,37 @@ export class ProjectsController {
         } not found: ${err}`
       );
     });
+  }
+
+  @Post('/drafts')
+  @Summary('get page of draft projects visible to a user')
+  @Status(200, { description: 'Success' })
+  async getDraftsPage(
+    @Description('Which page of results to return')
+    @BodyParams('page')
+    page: number = 1,
+    @Description('How many results to return per page')
+    @BodyParams('perPage')
+    perPage: number = 20
+  ): Promise<ProjectSchema[]> {
+    return this.projectsService.getDraftsPage(page, perPage).catch((err) => {
+      throw new NotFound(
+        `Draft Projects ${page * perPage} through ${
+          page * perPage + 1 - 1
+        } not found: ${err}`
+      );
+    })
+  }
+
+  @Get('/drafts/all')
+  @Summary('get all draft projects visible to a user')
+  @Status(200, { description: 'Success' })
+  async getAllDrafts(): Promise<ProjectSchema[]> {
+    return this.projectsService.getAllDrafts().catch((err) => {
+      throw new NotFound(
+        `Draft Projects not found: ${err}`
+      );
+    })
   }
 
   @Get('/:id')

@@ -92,6 +92,7 @@ type ProjectSchema {
   tracks: [String!]!
   clock: ProjectClockSchema!
   name: String!
+  draft: Boolean!
 }
 
 type Query {
