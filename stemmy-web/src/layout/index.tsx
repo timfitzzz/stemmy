@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { ReactElement, Ref, useContext, useEffect, useRef, useState } from 'react'
 import styled, { ThemeProvider } from 'styled-components'
 
 import theme from '../styles/theme'
@@ -17,6 +17,7 @@ import { Provider } from 'react-redux'
 import { store } from '../store'
 import { audioContext as AudioContext } from '../helpers'
 import { AudioProvider } from '../helpers/audioContext'
+import * as Tone from 'tone'
 
 interface ILayoutProps {
   children: any
@@ -37,6 +38,11 @@ const Wrapper = styled.div`
 `
 
 export default ({ children, location }: ILayoutProps) => {
+  const [ startedTone, setStartedTone ] = useState<Boolean>(false)
+  const [ removedToneStartListener, setRemovedToneStartListener ] = useState<Boolean>(false)
+
+
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
   const { image, site } = useStaticQuery(graphql`
     query masthead {
       image: file(relativePath: { eq: "icon.png" }) {
@@ -51,8 +57,29 @@ export default ({ children, location }: ILayoutProps) => {
     }
   `)
 
+  useEffect(() => {
+    async function handleStartTone() {
+      await Tone.start()
+      console.log('starting tone')
+      setStartedTone(true)
+    }
+
+    if (wrapperRef && !startedTone) {
+      wrapperRef!.current!.addEventListener('click', handleStartTone)
+    } else if (wrapperRef && startedTone && !removedToneStartListener) {
+      wrapperRef!.current!.removeEventListener('click', handleStartTone)
+      setRemovedToneStartListener(true)
+    }
+
+    return (() => {
+      if (wrapperRef && !startedTone) {
+        wrapperRef!.current!.removeEventListener('click', handleStartTone)
+      }
+    })
+  }, [wrapperRef, startedTone, removedToneStartListener])
+  
   return (
-    <Wrapper>
+    <Wrapper ref={wrapperRef}>
       <GlobalStyles />
       <Head pathname={location.pathname} />
       <ThemeProvider theme={theme}>

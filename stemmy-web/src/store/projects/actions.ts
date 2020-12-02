@@ -37,10 +37,13 @@ export function getProjectSuccess(project: ProjectProps) {
   }
 }
 
-export function getProjectFail(project: ProjectProps, err: Error) {
+export function getProjectFail(project: Partial<ProjectProps>, err: Error) {
   return {
     type: ProjectActions.GET_PROJECT_FAIL,
-    payload: [project, err],
+    payload: {
+      project, 
+      err: { id: project.id, message: err.toString() }
+    }
   }
 }
 
@@ -59,17 +62,22 @@ export function doneLoadingProjects(): ProjectActionTypes {
 export function errorLoadingProjects(err: Error): ProjectActionTypes {
   return {
     type: ProjectActions.ERROR_LOADING_PROJECTS,
-    payload: err,
+    payload: { message: err.toString() },
   }
 }
 
 export function createProjectSuccess(
-  name: string,
   newProject: ProjectProps
 ): ProjectActionTypes {
   return {
     type: ProjectActions.CREATE_NEW_PROJECT_SUCCESS,
-    payload: { name, newProject },
+    payload: { newProject },
+  }
+}
+
+export function clearCreatingProjectId(): ProjectActionTypes {
+  return {
+    type: ProjectActions.CLEAR_CREATING_PROJECT_ID
   }
 }
 
@@ -79,7 +87,13 @@ export function errorCreatingProject(
 ): ProjectActionTypes {
   return {
     type: ProjectActions.CREATE_NEW_PROJECT_FAIL,
-    payload: [name, err],
+    payload: { 
+      name, 
+      err: { 
+        id: name, 
+        message: err.toString() 
+      }
+    },
   }
 }
 
@@ -117,7 +131,41 @@ export function saveProjectFail(
 ): ProjectActionTypes {
   return {
     type: ProjectActions.SAVE_PROJECT_FAIL,
-    payload: [project, err],
+    payload: {
+      project: project, 
+      err: { id: project.id, message: err.toString() }
+    }
+  }
+}
+
+export const loadUserDraftProjects = (): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  ProjectActionTypes
+> => async dispatch => {
+  dispatch ({
+    type: ProjectActions.LOAD_USER_DRAFT_PROJECTS
+  })
+  try {
+    const userDrafts = await API.getDraftProjects()
+    dispatch(loadUserDraftProjectsSuccess(userDrafts.data))
+  } catch(err) {
+    dispatch(loadUserDraftProjectsFail(err))
+  }
+}
+
+export function loadUserDraftProjectsSuccess(drafts: ProjectProps[]): ProjectActionTypes {
+  return {
+    type: ProjectActions.LOAD_USER_DRAFT_PROJECTS_SUCCESS,
+    payload: drafts
+  }
+}
+
+export function loadUserDraftProjectsFail(err: Error): ProjectActionTypes {
+  return {
+    type: ProjectActions.LOAD_USER_DRAFT_PROJECTS_FAIL,
+    payload: { message: err.toString() }
   }
 }
 
@@ -158,11 +206,11 @@ export const createNewProject = ({
 > => async dispatch => {
   dispatch({
     type: ProjectActions.CREATE_NEW_PROJECT,
-    payload: { name },
+    payload: { name, draft: true },
   })
   try {
-    const newProject = await API.getNewProject({ name })
-    dispatch(createProjectSuccess(name, newProject.data))
+    const newProject = await API.getNewProject({ name, draft: true })
+    dispatch(createProjectSuccess(newProject.data))
   } catch (err) {
     dispatch(errorCreatingProject(name, err.message))
   }

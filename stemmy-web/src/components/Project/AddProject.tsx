@@ -9,78 +9,139 @@ import { BigButton } from '../Buttons'
 
 import TracksEditor from './ProjectEditor/TracksEditor'
 import BlankProjectCreator from './BlankProjectCreator'
+import DraftProjectsBrowser from './DraftProjectsBrowser'
+import Heading from '../Heading'
+import { Project } from '.'
+import { ProjectViews } from './Project'
 
 const AddProjectWrapper = styled.div`
   width: 100%;
   max-width: 800px;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   /* border: 5px solid ${p => p.theme.palette.midPrimary}; */
   padding-top: ${p => p.theme.spacing.unit}px;
   border-radius: 10px;
   height: 475px;
 `
 
-const VerticalMenu = styled.div`
-  width: 120px;
-  min-width: 120px;
-  max-width: 120px;
+const AddProjectHeader = styled.div`
+  display: flex;
+  flex-direction: row;
+`
+
+const AddProjectHeading = styled(Heading)`
+  color: ${p => p.theme.global.colors.midPrimary};
+  > h1 {
+    > a {
+    text-decoration: none;
+    }
+  }
+`
+
+const AddProjectContentContainer = styled.div`
+  display: flex;
+  flex-direction: row;
+`
+
+const LeftMenuPanel = styled.div`
+  width: 250px;
+  min-width: 250px;
+  max-width: 250px;
 
   display: flex;
   flex-direction: column;
 `
+
+const TopMenuPanel = styled.div`
+  width: 500px;
+  min-width: 500px;
+  max-width: 500px;
+
+  display: flex;
+  flex-direction: row;
+  margin-top: auto;
+  margin-bottom: auto;
+
+`
+
+const ProjectEditorContainer = styled.div`
+`
+
 interface IVerticalMenuItem {
   act: boolean
 }
 
-const VerticalMenuItem = styled(BigButton)<IVerticalMenuItem>`
-  height: 100px;
+const PinnedListItem = styled(BigButton)<IVerticalMenuItem>`
+  height: 50px;
   background-color: ${p =>
     p.act ? p.theme.palette.lightPrimary : p.theme.palette.darkPrimary};
   border-color: ${p =>
     p.act ? p.theme.palette.midPrimary : p.theme.palette.lightPrimary};
   align-content: center;
   vertical-align: middle;
-  margin-top: 0px;
   margin-bottom: ${p => p.theme.spacing.unit}px;
   margin-right: ${p => p.theme.spacing.unit}px;
-  margin-left: 0px;
 
   > span {
     margin: auto auto;
     color: ${p =>
       p.act ? p.theme.palette.darkPrimary : p.theme.palette.lightPrimary};
   }
+  width: 24%;
+  justify-content: space-between;
+  border-width: 1px;
 `
 
 export default ({}) => {
   enum addMethods {
     'loopy',
     'web',
+    'drafts',
   }
 
-  let [mode, setMode] = useState(addMethods.web)
+  let [mode, setMode] = useState(addMethods.drafts)
+  let [selectedDraft, setSelectedDraft] = useState<string | null>(null)
 
   return (
     <AddProjectWrapper>
-      <VerticalMenu>
-        <VerticalMenuItem
-          act={mode === addMethods.web}
-          handler={() => setMode(addMethods.web)}
-          text={'Start with Blank Project'}
+      <AddProjectHeader>
+        <AddProjectHeading 
+          title={'Add Project'} 
+          subtitle={'Edit drafts, import, or start fresh'}
         />
-        <VerticalMenuItem
-          act={mode === addMethods.loopy}
-          handler={() => setMode(addMethods.loopy)}
-          text={'Import from Loopy'}
-        />
-      </VerticalMenu>
+        <TopMenuPanel>
+          <PinnedListItem
+            act={mode === addMethods.web}
+            handler={() => setMode(addMethods.web)}
+            text={'New Project'}
+          />
+          <PinnedListItem
+            act={mode === addMethods.loopy}
+            handler={() => setMode(addMethods.loopy)}
+            text={'Import from Loopy'}
+          />
+        </TopMenuPanel>
+      </AddProjectHeader>
+      <AddProjectContentContainer>
+        <LeftMenuPanel>
+          <DraftProjectsBrowser onSelect={setSelectedDraft}/>
+        </LeftMenuPanel>
+        <ProjectEditorContainer>
+          {selectedDraft && (
+            <Project view={ProjectViews.editor} projectId={selectedDraft}/>
+          )}
+        </ProjectEditorContainer>
+      </AddProjectContentContainer>
+
+{/*         
       {
         {
           0: <div></div>,
           1: <BlankProjectCreator />,
+          2: <DraftProjectsBrowser />
         }[mode]
-      }
+      } */}
     </AddProjectWrapper>
   )
 }

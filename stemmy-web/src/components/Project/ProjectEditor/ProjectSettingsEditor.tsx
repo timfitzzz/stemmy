@@ -12,6 +12,7 @@ import { ProjectActionTypes } from '../../../store/projects'
 import { SaveProjectAction } from '../../../store/projects/types'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../../store'
+import { useProject } from '../../../helpers/useProject'
 
 interface ProjectClockFields {
   BPM?: number
@@ -35,9 +36,8 @@ interface ProjectFields {
 }
 
 interface IAddProjectProps {
-  project: ProjectProps
-  saveProject: (project: ProjectProps) => void
-  upsertProject: (project: ProjectProps) => void
+  projectId: string;
+  registerTransportChange: () => void;
 }
 
 const ProjectSettingsDisplay = styled.form`
@@ -84,41 +84,11 @@ const SavingIndicator = styled.span``
 
 const UpToDateIndicator = styled.span``
 
-export default ({ project, upsertProject, saveProject }: IAddProjectProps) => {
-  const [protoProject, setProtoProject] = useState<ProjectProps>(
-    { ...project } || {}
-  )
+export default ({ projectId, registerTransportChange }: IAddProjectProps) => {
+
+  const { project, saving, copy, commitCopy, getSetter, getClockSetter } = useProject({ id: projectId })
+
   const [editing, setEditing] = useState<boolean>(true)
-
-  const saving: boolean = useSelector<RootState, boolean>(state => {
-    if (protoProject) {
-      if (
-        state.projects.saving.length > 0 &&
-        state.projects.saving.findIndex(value => value === protoProject) !== -1
-      ) {
-        return true
-      } else {
-        return false
-      }
-    } else {
-      return false
-    }
-  })
-
-  function getProjectStateSetter<T>(prop: string) {
-    return (value: T) => {
-      setProtoProject({ ...protoProject, [prop]: value })
-    }
-  }
-
-  function getClockStateSetter<T>(prop: string) {
-    return (value: T) => {
-      setProtoProject({
-        ...protoProject,
-        clock: { ...protoProject.clock, [prop]: value },
-      })
-    }
-  }
 
   function renderActivity() {
     return (
@@ -132,49 +102,49 @@ export default ({ project, upsertProject, saveProject }: IAddProjectProps) => {
     )
   }
 
-  const setName = getProjectStateSetter<string>('name')
-  const setTracks = getProjectStateSetter<string[]>('tracks')
+  const setName = getSetter<string>('name')
+  const setBPM = getClockSetter<number>('BPM')
+  const setBeatsPerBar = getClockSetter<number>('beatsPerBar')
 
   function handleSaveChange() {
-    upsertProject(protoProject)
-    saveProject(protoProject)
+    commitCopy()
   }
-
-  useEffect(() => {
-    setProtoProject(project || {})
-  }, [project])
 
   return (
     <ProjectSettingsDisplay>
-      <ArtAndLabelContainer>
-        <ProjectArt src="https://via.placeholder.com/100" />
-        <EditableLabel
-          fieldName={'name'}
-          type={'textarea'}
-          value={protoProject.name}
-          setValue={setName}
-          valueContainer={ProjectTitle}
-          inputContainer={TitleInputContainer}
-          saveHandler={handleSaveChange}
-        />
-      </ArtAndLabelContainer>
-      <ClockSettingsContainer>
-        <SettingsSectionTitle>Time Settings</SettingsSectionTitle>
-        <BPMEditor
-          BPM={protoProject.clock!.BPM || 120}
-          setBPM={getClockStateSetter<number>('BPM')}
-          originalBPM={protoProject.clock!.originalBPM}
-          saveHandler={handleSaveChange}
-          disabled={editing || protoProject.clock!.BPMIsGuessed || true}
-        />
-        <TimeSignatureEditor
-          beatsPerBar={protoProject.clock!.beatsPerBar || 4}
-          setBeatsPerBar={getClockStateSetter<number>('beatsPerBar')}
-          disabled={editing}
-          saveHandler={handleSaveChange}
-        />
-      </ClockSettingsContainer>
-      <ActivityDisplay>{renderActivity()}</ActivityDisplay>
+      { copy && copy.clock &&
+        <>
+          <ArtAndLabelContainer>
+            <ProjectArt src="https://via.placeholder.com/100" />
+            <EditableLabel
+              fieldName={'name'}
+              type={'textarea'}
+              value={copy.name}
+              setValue={setName}
+              valueContainer={ProjectTitle}
+              inputContainer={TitleInputContainer}
+              saveHandler={handleSaveChange}
+            />
+          </ArtAndLabelContainer>
+          <ClockSettingsContainer>
+            <SettingsSectionTitle>Time Settings</SettingsSectionTitle>
+            <BPMEditor
+              BPM={copy.clock.BPM || 120}
+              setBPM={setBPM}
+              originalBPM={copy.clock.originalBPM}
+              saveHandler={handleSaveChange}
+              disabled={editing || copy.clock.BPMIsGuessed || true}
+            />
+            <TimeSignatureEditor
+              beatsPerBar={copy.clock.beatsPerBar || 4}
+              setBeatsPerBar={setBeatsPerBar}
+              disabled={editing}
+              saveHandler={handleSaveChange}
+            />
+          </ClockSettingsContainer>
+          <ActivityDisplay>{renderActivity()}</ActivityDisplay>
+        </>
+      }
     </ProjectSettingsDisplay>
   )
 }

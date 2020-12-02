@@ -8,19 +8,46 @@ export enum TrackActions {
   CREATE_NEW_TRACK = 'CREATE_NEW_TRACK',
   CREATE_NEW_TRACK_SUCCESS = 'CREATE_NEW_TRACK_SUCCESS',
   CREATE_NEW_TRACK_FAIL = 'CREATE_NEW_TRACK_FAIL',
+  GET_TRACK = 'GET_TRACK',
+  GET_TRACK_SUCCESS = 'GET_TRACK_SUCCESS',
+  GET_TRACK_FAIL = 'GET_TRACK_FAIL'
+}
+
+export type TrackIOError = {
+  id?: string
+  message: string
 }
 
 export interface ITrackStore {
   saving: TrackProps[]
-  errors: Error[] | []
+  errors: TrackIOError[] | []
   byId: {
     [key: string]: TrackProps
   }
+  loadingIds: string[]
 }
 
 export interface UpsertTrackAction {
   type: TrackActions.UPSERT_TRACK
   payload: TrackProps
+}
+
+export interface GetTrackAction {
+  type: TrackActions.GET_TRACK
+  payload: string
+}
+
+export interface GetTrackSuccessAction {
+  type: TrackActions.GET_TRACK_SUCCESS
+  payload: TrackProps
+}
+
+export interface GetTrackFailAction {
+  type: TrackActions.GET_TRACK_FAIL
+  payload: {
+    trackId: string,
+    err: Error
+  }
 }
 
 export interface SaveTrackAction {
@@ -71,3 +98,6 @@ export type TrackActionTypes =
   | CreateNewTrackAction
   | CreateNewTrackSuccessAction
   | CreateNewTrackFailAction
+  | GetTrackAction
+  | GetTrackSuccessAction
+  | GetTrackFailAction

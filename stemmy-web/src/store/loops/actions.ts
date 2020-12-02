@@ -38,10 +38,21 @@ export function saveLoopDataSuccess(
   }
 }
 
-export function getLoop({ id }: Partial<LoopProps>): LoopActionTypes {
-  return {
+export const getLoop = (id: string): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  LoopActionTypes
+> => async dispatch => {
+  dispatch({
     type: LoopActions.GET_LOOP,
-    payload: { id },
+    payload: id,
+  })
+  try {
+    const loop = await API.getLoopById(id)
+    dispatch(getLoopSuccess(loop.data))
+  } catch (err) {
+    dispatch(getLoopFail({ id }, err ))
   }
 }
 

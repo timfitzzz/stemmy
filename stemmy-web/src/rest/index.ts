@@ -19,6 +19,13 @@ export interface AxiosTrackResponse {
   data: TrackProps
 }
 
+export interface AxiosTrackBundleResponse {
+  data: {
+    track: TrackProps
+    audioEntity: LoopProps
+  }
+}
+
 export interface AxiosLoopsResponse {
   data: LoopProps[]
 }
@@ -45,18 +52,33 @@ export function getProjectsPage(
   return axios.post(`${REST_PREFIX}/projects`, { page, perPage })
 }
 
+export function getDraftProjectsPage(
+  page?: number,
+  perPage?: number
+): Promise<AxiosProjectsResponse> {
+  return axios.post(`${REST_PREFIX}/projects/drafts`, { page, perPage })
+}
+
+export function getDraftProjects(): Promise<AxiosProjectsResponse> {
+  return axios.get(`${REST_PREFIX}/projects/drafts/all`)
+}
+
 export function getProjectById(id: string): Promise<AxiosProjectResponse> {
   return axios.get(`${REST_PREFIX}/projects/${id}`)
 }
 
 export function getNewProject(
-  project: ProjectProps = {}
+  project: Partial<ProjectProps> = {}
 ): Promise<AxiosProjectResponse> {
   return axios.post(`${REST_PREFIX}/projects/create`, { params: project })
 }
 
 export function getNewTrack(track: TrackProps): Promise<AxiosTrackResponse> {
   return axios.post(`${REST_PREFIX}/tracks/create`, track)
+}
+
+export function getTrackBundleFromDb(trackId: string): Promise<AxiosTrackBundleResponse> {
+  return axios.get(`${REST_PREFIX}/tracks/${trackId}`)
 }
 
 export function updateRemoteTrack(
@@ -75,6 +97,14 @@ export function saveTrackToDb(track: TrackProps): Promise<AxiosTrackResponse> {
 
 export function getLoopById(id: string): Promise<AxiosTrackResponse> {
   return axios.get(`${REST_PREFIX}/loops/${id}`)
+}
+
+export function getLoopAudioUrlById(id?: string): string {
+  if (typeof id != undefined && id !== null) {
+    return `${REST_PREFIX}/loops/audio/${id}`
+  } else {
+    return ``
+  }
 }
 
 function generateLoopFormData(

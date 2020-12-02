@@ -96,7 +96,7 @@ export default ({ project, upsertProject, saveProject }: IAddProjectProps) => {
     if (protoProject) {
       if (
         state.projects.saving.length > 0 &&
-        state.projects.saving.findIndex(value => value === protoProject) !== -1
+        state.projects.saving.findIndex((value: Partial<ProjectProps>) => value === protoProject) !== -1
       ) {
         return true
       } else {

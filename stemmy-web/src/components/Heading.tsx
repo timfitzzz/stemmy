@@ -4,7 +4,8 @@ import styled from 'styled-components'
 
 interface IHeadingProps {
   title: string
-  subtitle: string
+  subtitle?: string
+  link?: string
 }
 
 const Wrapper = styled.div`
@@ -15,21 +16,22 @@ const Wrapper = styled.div`
   width: 100%;
 `
 
-const Title = styled.h1`
+export const Title = styled.h1`
   margin-top: 2px;
   margin-bottom: 1px;
 `
 
-const Subtitle = styled.p`
+export const Subtitle = styled.p`
   margin-top: 2px;
 `
 
-export default (props: IHeadingProps) => {
-  const { title, subtitle } = props
+export default ({ title, subtitle, link}: IHeadingProps) => {
   return (
     <Wrapper>
-      <Title>
-        <Link to="/">{title}</Link>
+      <Title> 
+        { link ? (
+          <Link to={link}>{title}</Link>
+        ) : title }
       </Title>
       <Subtitle>{subtitle}</Subtitle>
     </Wrapper>

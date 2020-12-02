@@ -7,33 +7,58 @@ import React, {
   useMemo,
   useState,
 } from 'react'
+import { ProjectClockSettings } from '../types'
+import { BaseContext, Destination, Gain, getContext, getTransport, Player, ToneAudioBuffer, ToneAudioNode } from 'tone'
+import { Transport } from 'tone/build/esm/core/clock/Transport'
+import { Tone } from 'tone/build/esm/core/Tone'
+
+// export enum TransportStatus {
+//   Project = "Project",
+//   Transition = "Transition"
+// }
+
+export interface ITransportState {
+  // status: TransportStatus | null;
+  currentProjectId: string | null;
+  nextProjectId: string | null;
+}
 
 export type IContextForAudio = {
-  audioCtx: AudioContext | null
-  masterGainNode: AudioNode | null
-  entitySourceNodes: {
-    [key: string]: AudioBufferSourceNode
+  Transport: Transport | null
+  audioCtx: BaseContext | null
+  transportState: ITransportState | null
+  masterGainNode: Gain<"gain">
+  entityPlayers: {
+    [key: string]: Player
   }
   entitySourceBuffers: {
-    [key: string]: AudioBuffer
+    [key: string]: ToneAudioBuffer
   }
-  entityGainNodes: {
-    [key: string]: GainNode
-  }
-  upsertSourceNode: (id: string, sourceNode: AudioBufferSourceNode) => void
-  upsertSourceBuffer: (id: string, audioBuffer: AudioBuffer) => void
-  upsertSourceGain: (id: string, gainNode: AudioNode) => void
-  getSourceNode: (id: string) => AudioBufferSourceNode
-  getSourceBuffer: (id: string) => AudioBuffer
-  getSourceGain: (id: string) => GainNode
-  clearSourceNode: (id: string) => void
+  // entityGainNodes: {
+  //   [key: string]: ToneAudioNode<Gain>
+  // }
+  upsertEntityPlayer: (id: string, player: Player) => void
+  upsertSourceBuffer: (id: string, toneAudioBuffer: ToneAudioBuffer) => void
+  // upsertEntityGain: (id: string, gainNode: ToneAudioNode<Gain>) => void
+  getEntityPlayer: (id: string) => Player
+  getSourceBuffer: (id: string) => ToneAudioBuffer
+  // getEntityGain: (id: string) => ToneAudioNode<Gain>
+  clearEntityPlayer: (id: string) => void
+  // setTransportState: ({ status, currentProjectId, nextProjectId}: ITransportState) => void
+  setCurrentProject: (projectId: string) => void
+  clearCurrentProject: () => void
+  setNextProject: (projectId: string) => void
+  isCurrentProject: (projectId: string) => boolean
+  isNextProject: (projectId: string) => boolean
 }
 
 const defaultContextForAudioState: Partial<IContextForAudio> = {
+  Transport: null,
+  transportState: null,
   audioCtx: null,
-  entitySourceNodes: {},
+  entityPlayers: {},
   entitySourceBuffers: {},
-  entityGainNodes: {},
+  // entityGainNodes: {},
 }
 
 interface IAudioProvider {
@@ -54,62 +79,96 @@ export const AudioProvider = ({
 }: IAudioProvider) => {
   const [context, setContext] = useState(contextState)
 
-  const upsertSourceNode = (id: string, sourceNode: AudioBufferSourceNode) =>
+  const upsertEntityPlayer = (id: string, player: Player) => {
+    console.log('upserting entityPlayer ', player)
     setContext({
       ...context,
-      entitySourceNodes: {
-        ...context.entitySourceNodes,
-        [id]: sourceNode,
+      entityPlayers: {
+        ...context.entityPlayers,
+        [id]: player,
       },
     })
+  }
 
-  const clearSourceNode = (id: string) => {
-    const { [id]: nodeToClear, ...otherNodes } = context.entitySourceNodes!
+
+  const clearEntityPlayer = (id: string) => {
+    const { [id]: nodeToClear, ...otherNodes } = context.entityPlayers!
 
     setContext({
       ...context,
-      entitySourceNodes: {
+      entityPlayers: {
         ...otherNodes,
       },
     })
   }
 
-  const upsertSourceBuffer = (id: string, audioBuffer: AudioBuffer) =>
+  const upsertSourceBuffer = (id: string, toneAudioBuffer: ToneAudioBuffer) =>
     setContext({
       ...context,
       entitySourceBuffers: {
         ...context.entitySourceBuffers,
-        [id]: audioBuffer,
+        [id]: toneAudioBuffer,
       },
     })
 
-  const upsertSourceGain = (id: string, gainNode: GainNode) => {
-    setContext({
-      ...context,
-      entityGainNodes: {
-        ...context.entityGainNodes,
-        [id]: gainNode,
-      },
-    })
-  }
 
-  const getSourceNode = (id: string): AudioBufferSourceNode | null =>
-    context!.entitySourceNodes![id] || null
+  const getEntityPlayer = (id: string): Player | null =>
+    context!.entityPlayers![id] || null
 
-  const getSourceBuffer = (id: string): AudioBuffer | null =>
+  const getSourceBuffer = (id: string): ToneAudioBuffer | null =>
     context!.entitySourceBuffers![id] || null
 
-  const getSourceGain = (id: string): GainNode | null =>
-    context!.entityGainNodes![id] || null
+  const setTransportState = ({currentProjectId, nextProjectId}: Partial<ITransportState>): void => {
+    if (context.transportState) {
+      setContext({
+        ...context,
+        transportState: {
+          currentProjectId: currentProjectId ? currentProjectId : context.transportState.currentProjectId,
+          nextProjectId: nextProjectId ? nextProjectId : context.transportState.nextProjectId
+        }
+      })
+    }
+  }
+
+  const clearCurrentProject = (): void => {
+    if (context.transportState) {
+      setContext({ 
+        ...context, 
+        transportState: { 
+          currentProjectId: null, 
+          nextProjectId: context.transportState.nextProjectId 
+        }
+      })
+    }
+  }
+
+  const setCurrentProject = (projectId: string): void => 
+    setTransportState({ currentProjectId: projectId})
+
+  const setNextProject = (projectId: string): void => 
+    setTransportState({ nextProjectId: projectId })
+
+  const isCurrentProject = (projectId: string): boolean | null => 
+    context.transportState ?
+      context.transportState.currentProjectId === projectId 
+      : null
+
+  const isNextProject = (projectId: string): boolean | null => 
+    context.transportState ?
+      context.transportState.nextProjectId === projectId
+      : null
 
   useEffect(() => {
     if (window) {
-      let audioCtx = new AudioContext()
-      let masterGainNode = audioCtx.createGain()
-      masterGainNode.connect(audioCtx.destination)
+      let Transport = getTransport()
+      let audioCtx = getContext()
+      let masterGainNode = Destination.output
+
+      console.log(audioCtx.lookAhead);
 
       setContext({
         ...context,
+        Transport,
         masterGainNode,
         audioCtx,
       })
@@ -120,13 +179,19 @@ export const AudioProvider = ({
     <AudioEngineProvider
       value={{
         ...context,
-        upsertSourceNode,
+        upsertEntityPlayer,
         upsertSourceBuffer,
-        upsertSourceGain,
-        getSourceNode,
+        // upsertEntityGain,
+        getEntityPlayer,
         getSourceBuffer,
-        getSourceGain,
-        clearSourceNode,
+        // getEntityGain,
+        clearEntityPlayer,
+        setTransportState,
+        setCurrentProject,
+        clearCurrentProject,
+        setNextProject,
+        isCurrentProject,
+        isNextProject
       }}
     >
       {children}

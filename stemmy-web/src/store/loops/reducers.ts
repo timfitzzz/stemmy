@@ -54,7 +54,7 @@ export function loopsReducer(
     case LoopActions.GET_LOOP: {
       return {
         ...state,
-        loading: [...state.loading, action.payload.id!],
+        loading: [...state.loading, action.payload],
       }
     }
     case LoopActions.GET_LOOP_FAIL: {

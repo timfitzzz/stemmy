@@ -7,6 +7,7 @@ import { addTrackAndEntityFromAudioFile } from '../../../store/crossoverActions'
 import { audioEntityTypes } from '../../../types'
 import { AudioEntitySources } from '../../../types'
 import { Track } from '../../Tracks'
+import { useProject } from '../../../helpers/useProject'
 
 const TracksEditorWrapper = styled.div`
   padding: 0px;
@@ -22,11 +23,15 @@ const TracksWrapper = styled.div`
 `
 
 interface TracksEditorProps {
-  trackIds: string[]
   projectId: string
 }
 
-export default ({ trackIds, projectId }: TracksEditorProps) => {
+export default ({ projectId }: TracksEditorProps) => {
+
+  const { project, addTrackFromFile } = useProject ({ id: projectId })
+
+  const trackIds = project ? project.tracks : null
+
   const [hover, setHover] = useState(false)
   const [dragTarget, setDragTarget] = useState<HTMLElement>()
   const [dragCounter, setDragCounter] = useState<number>(0)
@@ -42,14 +47,7 @@ export default ({ trackIds, projectId }: TracksEditorProps) => {
 
     if (files.length > 0) {
       for (let i = 0; i < files.length; i++) {
-        dispatch(
-          addTrackAndEntityFromAudioFile(
-            [files[i], files[i].name],
-            projectId,
-            audioEntityTypes.Loop,
-            AudioEntitySources.web
-          )
-        )
+        addTrackFromFile([files[i], files[i].name])
       }
     }
   }
@@ -97,7 +95,7 @@ export default ({ trackIds, projectId }: TracksEditorProps) => {
       <TracksWrapper>
         {trackIds &&
           trackIds.map(trackId => (
-            <Track trackId={trackId} editing={true} perRow={3} />
+            <Track trackId={trackId} editing={true} perRow={3} asPlayer={true}/>
           ))}
       </TracksWrapper>
     </TracksEditorWrapper>

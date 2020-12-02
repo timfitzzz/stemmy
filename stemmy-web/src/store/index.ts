@@ -20,11 +20,11 @@ export function removeDocFromSaving<T>(savingState: T[], document: T) {
   return savingState.slice(0, docIndex).concat(savingState.slice(docIndex + 1))
 }
 
-interface hasName {
+export interface hasName {
   name?: string
 }
 
-interface hasId {
+export interface hasId {
   id?: string
 }
 

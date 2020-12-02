@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { ReactElement, Ref } from 'react'
 import styled from 'styled-components'
 import TopBar from './TopBar'
 
@@ -12,7 +12,7 @@ const Wrapper = styled.div`
 
 export default ({ children }: BodyContainerProps) => {
   return (
-    <Wrapper>
+    <Wrapper >
       <TopBar />
       {children}
     </Wrapper>

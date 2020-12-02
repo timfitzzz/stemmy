@@ -15,6 +15,7 @@ export abstract class ProjectProps {
   tracks?: string[]
   clock?: ProjectClockSettings
   name?: string
+  draft?: boolean
 }
 
 export abstract class ProjectTrackProps {

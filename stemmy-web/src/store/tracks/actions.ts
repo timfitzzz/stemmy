@@ -2,16 +2,52 @@ import { TrackProps } from '../../types'
 import { ITrackStore, TrackActions, TrackActionTypes } from '.'
 import { RootState } from '../root-reducer'
 import { ThunkAction } from 'redux-thunk'
-import {
-  saveTrackToDb,
-  AxiosTracksResponse,
-  AxiosTrackResponse,
-} from '../../rest'
+import * as API from '../../rest'
 
 export function upsertTrack(newTrack: TrackProps): TrackActionTypes {
   return {
     type: TrackActions.UPSERT_TRACK,
     payload: newTrack,
+  }
+}
+
+export const getTrack = (
+  trackId: string
+): ThunkAction<
+  void,
+  RootState,
+  unknown,
+  TrackActionTypes
+> => async dispatch => {
+  dispatch({
+    type: TrackActions.GET_TRACK,
+    payload: trackId
+  })
+  try {
+    const { data: trackBundleResult }: API.AxiosTrackBundleResponse = await API.getTrackBundleFromDb(
+      trackId
+    )
+    dispatch(upsertTrack(trackBundleResult.track))
+    dispatch(getTrackSuccess(trackBundleResult.track))
+  } catch (err) {
+    dispatch(getTrackFail(trackId, err))
+  }
+}
+
+export function getTrackSuccess(track: TrackProps): TrackActionTypes {
+  return {
+    type: TrackActions.GET_TRACK_SUCCESS,
+    payload: track
+  }
+}
+
+export function getTrackFail(trackId: string, err: Error): TrackActionTypes {
+  return {
+    type: TrackActions.GET_TRACK_FAIL,
+    payload: {
+      trackId,
+      err
+    }
   }
 }
 
@@ -79,7 +115,7 @@ export const saveTrack = (
 > => async dispatch => {
   dispatch(setTrackSaving(track))
   try {
-    const { data: trackSaveResult }: AxiosTrackResponse = await saveTrackToDb(
+    const { data: trackSaveResult }: API.AxiosTrackResponse = await API.saveTrackToDb(
       track
     )
     dispatch(upsertTrack(trackSaveResult))

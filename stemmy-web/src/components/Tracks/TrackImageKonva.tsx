@@ -4,19 +4,21 @@ import mainTheme from '../../styles/theme';
 const forwardBlack = require('../../images/forward-black.svg') as string;
 const reverseGreen = require('../../images/reverse-green.svg') as string;
 import useImage from 'use-image';
+import { Player, ToneAudioBuffer } from 'tone';
 
 interface ITrackImageKonva {
-  audioBuffer: AudioBuffer
-  sourceNode: AudioBufferSourceNode
+  audioBuffer: ToneAudioBuffer
+  entityPlayer: Player
   currentPlayhead: number
+  toggleReverse: () => void
   width: number
   height: number
-  gain: number
+  volume: number
   outerMargin: number
   innerMargin: number
 }
 
-export default ({audioBuffer, sourceNode, currentPlayhead, width, height, gain, outerMargin, innerMargin}: ITrackImageKonva) => {
+export default ({audioBuffer, entityPlayer, toggleReverse, currentPlayhead, width, height, volume, outerMargin, innerMargin}: ITrackImageKonva) => {
 
   let center = useMemo(() => {
     return {
@@ -27,8 +29,6 @@ export default ({audioBuffer, sourceNode, currentPlayhead, width, height, gain, 
 
   const [fwdImage, fwdImageStatus] = useImage(forwardBlack)
   const [revImage, revImageStatus] = useImage(reverseGreen)
-
-  let [reversed, setReversed] = useState(true)
 
   let outerRadius = useMemo(() => (height / 2) - (outerMargin as number), [height])
   let innerRadius = useMemo(() => (innerMargin as number), [height])
@@ -100,14 +100,12 @@ export default ({audioBuffer, sourceNode, currentPlayhead, width, height, gain, 
     return result;
   }
 
-  let playHeadDegrees = currentPlayhead / (audioBuffer.duration * 1000) * 360
+  let playHeadDegrees = currentPlayhead * 360
 
   let { x: playheadTopX, y: playheadTopY } = getCirclePoint(playHeadDegrees, outerRadius + 4)
   let { x: playheadZeroX, y: playheadZeroY } = getCirclePoint(playHeadDegrees, zeroRadius)
   let { x: playheadBottomX, y: playheadBottomY } = getCirclePoint(playHeadDegrees, innerRadius)
   let { x: playheadShadowOffsetX, y: playheadShadowOffsetY } = getShadowOffset()
-
-  console.log(fwdImage)
 
   return (
     <Stage width={width} height={height}>
@@ -123,15 +121,15 @@ export default ({audioBuffer, sourceNode, currentPlayhead, width, height, gain, 
           y={-height/2 + 2} 
           fillEnabled 
           fill={mainTheme.palette.lightPrimary}
-          onClick={(e) => setReversed(!reversed)}
+          onClick={(e) => toggleReverse()}
         />
-        { reversed ? (
+        { entityPlayer.reverse ? (
           <Image image={revImage}
             x={(-width/2 +2) + ((height/2 -2) / 30)}
             y={(-height/2 +2 ) + ((height/2 -2) / 30)}
             height={(height/2 - 2) / 4} 
             width={(width/2 - 2) / 4}
-            onClick={(e) => setReversed(!reversed)} 
+            onClick={(e) => toggleReverse()} 
           />
         ) : (
           <Image image={fwdImage}
@@ -141,7 +139,7 @@ export default ({audioBuffer, sourceNode, currentPlayhead, width, height, gain, 
             y={(-height/2 +2 ) + ((height/2 -2) / 30)}
             height={(height/2 - 2) / 4} 
             width={(width/2 - 2) / 4}
-            onClick={(e) => setReversed(!reversed)} 
+            onClick={(e) => toggleReverse()} 
             // x={-width/2 + 4} 
             // y={-height/2 + 4} 
             // stroke={'black'}
@@ -196,8 +194,8 @@ export default ({audioBuffer, sourceNode, currentPlayhead, width, height, gain, 
 
       <Layer offset={{x: -Math.abs(center.x), y: -Math.abs(center.y)}}>
         { segments.map((segment, i) => {
-            let startXY = getSegmentMinXY(i, segment.min * gain*1.5)
-            let endXY = getSegmentMaxXY(i, segment.max * gain*1.5)
+            let startXY = getSegmentMinXY(i, segment.min * volume)
+            let endXY = getSegmentMaxXY(i, segment.max * volume)
             // console.log(startXY, endXY)
             let line = (
               <Line 

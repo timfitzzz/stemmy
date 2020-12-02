@@ -1,27 +1,22 @@
-import React, { useState } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import styled from 'styled-components'
 import { ProjectActionTypes } from '../../../store/projects'
 import { ProjectProps } from '../../../types'
 import TracksEditor from './TracksEditor'
 import ProjectSettingsEditor from './ProjectSettingsEditor'
+import useTransport from '../../../helpers/useTransport'
+import ContextForAudio, { IContextForAudio } from '../../../helpers/audioContext'
+import { Panel, PanelWrapper } from '../../Panel';
+import { useProject } from '../../../helpers/useProject'
 
-const ProjectEditorWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  height: 100%;
+
+const ProjectEditorWrapper = styled(PanelWrapper)`
+  flex-direction: row;
 `
 
-const ProjectEditorSplitWrapper = styled.div`
-  display: flex;
+const ProjectEditorSplitWrapper = styled(Panel)`
   flex-direction: row;
-  width: 100%;
   max-width: 800px;
-  border: 3px solid ${p => p.theme.palette.lightPrimary};
-  border-radius: 20px;
-  position: relative;
-  align-items: stretch;
-  height: 100%;
 `
 
 const ProjectEditorFormFieldsWrapper = styled.div`
@@ -41,31 +36,51 @@ const ProjectEditorTracksListWrapper = styled.div`
 `
 
 interface ProjectEditorProps {
-  project: ProjectProps
-  saveProject: (project: ProjectProps) => void
-  upsertProject: (project: ProjectProps) => void
+  projectId: string
 }
 
 export default ({
-  project,
-  saveProject,
-  upsertProject,
+  projectId
 }: ProjectEditorProps) => {
-  const [name, setName] = useState(project.name)
-  const [tracks, setTracks] = useState(project.tracks)
+
+  const { project } = useProject({ id: projectId, props: [ 'name', 'tracks']})
+
+  const [name, setName] = useState(project ? project.name : null)
+  const [tracks, setTracks] = useState(project ? project.tracks : null)
+
+  const contextObj: Partial<IContextForAudio> = useContext(ContextForAudio)
+  const { setCurrentProject, clearCurrentProject } = contextObj;
+
+  const { transportSet, unsetTransport, Transport } = useTransport({
+    projectId: project ? project.id : undefined,
+    projectClock: project ? project.clock : undefined
+  });
+
+  useEffect(() => {
+    if (setCurrentProject && project && project.id) {
+      setCurrentProject(project.id)
+    }
+
+    return () => {
+      if (clearCurrentProject) {
+        clearCurrentProject()
+      }
+    }
+  }, [])
 
   return (
     <ProjectEditorWrapper>
       <ProjectEditorSplitWrapper>
         <ProjectEditorFormFieldsWrapper>
           <ProjectSettingsEditor
-            project={project}
-            saveProject={saveProject}
-            upsertProject={upsertProject}
+            projectId={projectId}
+            registerTransportChange={unsetTransport}
           />
         </ProjectEditorFormFieldsWrapper>
         <ProjectEditorSplitBorder />
-        <TracksEditor trackIds={project.tracks!} projectId={project.id!} />
+        <TracksEditor 
+          projectId={projectId}
+        />
       </ProjectEditorSplitWrapper>
     </ProjectEditorWrapper>
   )

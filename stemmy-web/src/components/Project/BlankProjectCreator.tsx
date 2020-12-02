@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
+import { useProject } from '../../helpers/useProject'
 import styled from 'styled-components'
 import verbalId from 'verbal-id'
 
@@ -19,39 +20,51 @@ const BlankProjectCreatorWrapper = styled.div`
 export default ({}) => {
   const projectsDispatch = useDispatch()
 
-  const [loading, setLoading] = useState(true)
+  // const [loading, setLoading] = useState(true)
+  
+  const { project } = useProject({})
 
-  const creatingProjectId: string | null = useSelector<
-    RootState,
-    string | null
-  >(state => state.projects.creatingId)
+  // // here is the amount of logic we actually want in here:
+  // // const { getDraftProjects } = getProject()
+  // // const draftProjects = getDraftProjects()
+  // //
+  // // const 
+  // //
+  // // useEffect(() => {
+  // //  
+  // // })
 
-  let protoProject: ProjectProps | null = useSelector<
-    RootState,
-    ProjectProps | null
-  >(state => {
-    if (!creatingProjectId) {
-      return null
-    } else {
-      return state.projects.byId[creatingProjectId]
-    }
-  })
+  // const creatingProjectId: string | null = useSelector<
+  //   RootState,
+  //   string | null
+  // >(state => state.projects.creatingId)
 
-  // const projectLoading: boolean = useSelector<RootState, boolean>(
-  //   state => state.projects.saving.loading
-  // )
+  // let protoProject: ProjectProps | null = useSelector<
+  //   RootState,
+  //   ProjectProps | null
+  // >(state => {
+  //   if (!creatingProjectId) {
+  //     return null
+  //   } else {
+  //     return state.projects.byId[creatingProjectId]
+  //   }
+  // })
 
-  useEffect(() => {
-    if (!creatingProjectId) {
-      projectsDispatch(createNewProject({ name: verbalId.create(undefined) }))
-    } else if (creatingProjectId && loading) {
-      setLoading(false)
-    }
-  })
+  // // const projectLoading: boolean = useSelector<RootState, boolean>(
+  // //   state => state.projects.saving.loading
+  // // )
+
+  // useEffect(() => {
+  //   if (!creatingProjectId) {
+  //     projectsDispatch(createNewProject({ name: verbalId.create(undefined) }))
+  //   } else if (creatingProjectId && loading) {
+  //     setLoading(false)
+  //   }
+  // }, [creatingProjectId, loading])
 
   return (
     <BlankProjectCreatorWrapper>
-      {loading || !creatingProjectId ? (
+      {!project? (
         <div>loading...</div>
       ) : (
         <ProjectEditor
@@ -61,7 +74,7 @@ export default ({}) => {
           upsertProject={(project: ProjectProps) => {
             projectsDispatch(upsertProject(project))
           }}
-          project={protoProject || {}}
+          project={project}
         ></ProjectEditor>
       )}
     </BlankProjectCreatorWrapper>

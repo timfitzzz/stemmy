@@ -31,7 +31,7 @@ export interface UpsertLoopAction {
 
 export interface GetLoopAction {
   type: LoopActions.GET_LOOP
-  payload: Partial<LoopProps>
+  payload: string
 }
 
 export interface GetLoopSuccessAction {

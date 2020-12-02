@@ -2,6 +2,7 @@ import { LoopProps, ProjectProps } from '../../types'
 import { ThunkAction } from 'redux-thunk'
 import { GET_PROJECTS_PAGE } from '../../gql/queries'
 import { LoopActions } from '../loops'
+import { hasId, hasName } from '../'
 
 export enum ProjectActions {
   UPSERT_PROJECT = 'UPSERT_PROJECT',
@@ -20,14 +21,24 @@ export enum ProjectActions {
   GET_PROJECT = 'GET_PROJECT',
   GET_PROJECT_SUCCESS = 'GET_PROJECT_SUCCESS',
   GET_PROJECT_FAIL = 'GET_PROJECT_FAIL',
+  LOAD_USER_DRAFT_PROJECTS = 'LOAD_USER_DRAFT_PROJECTS',
+  LOAD_USER_DRAFT_PROJECTS_SUCCESS = 'LOAD_USER_DRAFT_PROJECTS_SUCCESS',
+  LOAD_USER_DRAFT_PROJECTS_FAIL = 'LOAD_USER_DRAFT_PROJECTS_FAIL',
+  CLEAR_CREATING_PROJECT_ID = 'CLEAR_CREATING_PROJECT_ID'
+}
+
+export type ProjectIOError = {
+  id?: string
+  message: string
 }
 
 export interface IProjectStore {
-  saving: ProjectProps[] | []
-  errors: Error[] | []
+  saving: hasId[] | hasName[] | ProjectProps[] | []
+  errors: ProjectIOError[] | []
   byId: {
     [key: string]: ProjectProps
-  }
+  },
+  drafts: string[], // each array is a page
   page: {
     loading: boolean
     pageNumber: number
@@ -47,7 +58,7 @@ export interface DoneLoadingProjectsAction {
 
 export interface ErrorLoadingProjectsAction {
   type: ProjectActions.ERROR_LOADING_PROJECTS
-  payload: Error
+  payload: ProjectIOError
 }
 
 export interface GetProjectAction {
@@ -62,7 +73,10 @@ export interface GetProjectSuccessAction {
 
 export interface GetProjectFailAction {
   type: ProjectActions.GET_PROJECT_FAIL
-  payload: [ProjectProps, Error]
+  payload: {
+    project: ProjectProps, 
+    err: ProjectIOError
+  }
 }
 
 export interface UpsertProjectAction {
@@ -82,11 +96,10 @@ export interface UpdateProjectsPageAction {
 
 export interface CreateNewProjectAction {
   type: ProjectActions.CREATE_NEW_PROJECT
-  payload: { name: string }
+  payload: { name: string, draft: true }
 }
 
 export interface CreateNewProjectSuccessPayload {
-  name: string
   newProject: ProjectProps
 }
 
@@ -97,7 +110,7 @@ export interface CreateNewProjectSuccessAction {
 
 export interface CreateNewProjectFailAction {
   type: ProjectActions.CREATE_NEW_PROJECT_FAIL
-  payload: [string, Error]
+  payload: { name: string, err: ProjectIOError }
 }
 
 export interface SaveProjectAction {
@@ -117,7 +130,28 @@ export interface SaveProjectSuccessAction {
 
 export interface SaveProjectFailAction {
   type: ProjectActions.SAVE_PROJECT_FAIL
-  payload: [ProjectProps, Error]
+  payload: {
+    project: ProjectProps, 
+    err: ProjectIOError
+  }
+}
+
+export interface LoadUserDraftProjectsAction {
+  type: ProjectActions.LOAD_USER_DRAFT_PROJECTS
+}
+
+export interface LoadUserDraftProjectsSuccessAction {
+  type: ProjectActions.LOAD_USER_DRAFT_PROJECTS_SUCCESS
+  payload: ProjectProps[]
+}
+
+export interface LoadUserDraftProjectsFailAction {
+  type: ProjectActions.LOAD_USER_DRAFT_PROJECTS_FAIL
+  payload: ProjectIOError
+}
+
+export interface ClearCreatingProjectIdAction {
+  type: ProjectActions.CLEAR_CREATING_PROJECT_ID
 }
 
 // export interface LoadProjectsPageAction {
@@ -151,6 +185,10 @@ export type ProjectActionTypes =
   | GetProjectAction
   | GetProjectSuccessAction
   | GetProjectFailAction
+  | LoadUserDraftProjectsAction
+  | LoadUserDraftProjectsSuccessAction
+  | LoadUserDraftProjectsFailAction
+  | ClearCreatingProjectIdAction
 
 export type ProjectThunkResult<R> = ThunkAction<
   R,

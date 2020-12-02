@@ -4,11 +4,14 @@ import { RootState } from '../../store'
 import styled from 'styled-components'
 import { LoopProps, TrackProps } from '../../types'
 
-import { useSourceNode } from '../../helpers/useSourceNode'
+import { useEntityPlayer } from '../../helpers/useEntityPlayer'
 import { getLoop } from '../../store/loops/actions'
+import { getLoopAudioUrlById } from '../../rest';
 
 import Axios, { AxiosResponse } from 'axios'
 import TrackImageKonva from './TrackImageKonva'
+import { Player } from 'tone'
+import useTrack from '../../helpers/useTrack'
 
 export const REST_URI = process.env.GATSBY_REST_URI
 
@@ -16,6 +19,7 @@ export interface ITrackProps {
   trackId: string
   editing: boolean
   perRow: number
+  asPlayer?: boolean
 }
 
 export interface ITrackWrapper {
@@ -83,87 +87,95 @@ export const TrackVolumeDisplay = styled.div`
   box-sizing: border-box;
 `
 
-export const Track = ({ trackId, editing, perRow }: ITrackProps) => {
+export const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
   
-  // arrayBuffer state -- will be loaded in useEffect below
-  let [arrayBuffer, setArrayBuffer] = useState<ArrayBuffer | null>(null)
-  let [loadingAudio, setLoadingAudio] = useState<boolean>(false)
+  // entityPlayer state -- will be loaded in useEffect below
+  // let [entityPlayer, setEntityPlayer] = useState<Player | null>(null)
+  let [loadedPlayer, setLoadedPlayer] = useState<boolean>(false)
+  let [loadingPlayer, setLoadingPlayer] = useState<boolean>(false)
   let [playing, setPlaying] = useState<boolean>(false)
   let ref = useRef<HTMLDivElement>(null)
-  let [currentGain, setCurrentGain] = useState(1);
+  let [currentVolume, setCurrentVolume] = useState(0);
+
   const dispatch = useDispatch()
-  let [currentPlayhead, setCurrentPlayhead] = useState(0)
 
-  // GET trackProps from Redux store
-  const trackProps: TrackProps = useSelector<RootState, TrackProps>(state => {
-    return state.tracks.byId[trackId]
-  })
-  let { entityType, entityId } = trackProps
+  let [currentPlayhead, setCurrentPlayhead] = useState(0);
 
-  // GET entityProps from Redux store (if available)
-  const entityProps: LoopProps | null = useSelector<
-    RootState,
-    LoopProps | null
-  >(state => {
-    if (entityId && state.loops.byId[entityId]) {
-      return state.loops.byId[entityId]
-    } else {
-      return {}
-    }
-  })
+  let { track, entity, player } = useTrack({id: trackId, player: asPlayer})
+
+  // // GET entityProps from Redux store (if available)
+  // const entityProps: LoopProps | null = useSelector<
+  //   RootState,
+  //   LoopProps | null
+  // >(state => {
+  //   if (entityId && state.loops.byId[entityId]) {
+  //     return state.loops.byId[entityId]
+  //   } else {
+  //     return {}
+  //   }
+  // })
+
+  console.log(player)
 
   //  get sourceNode state from useSourceNode hook (mostly null on first render)
   const {
-    sourceNode,
-    gainNode,
+    entityPlayer,
     sourceBuffer,
-    startPlayback,
-    stopPlayback,
+    startPlaybackNow,
+    stopPlaybackNow,
+    getPlaybackLocation,
     getPlaybackTime,
-    gainUp,
-    gainDown,
-  } = useSourceNode(arrayBuffer, [arrayBuffer, !loadingAudio], entityId)
+    getVolume,
+    getGain,
+    toggleReverse,
+    volumeUp,
+    volumeDown,
+  } = player
 
-  // FIRST: if unavailable, get entityProps for the track's associated entity
   useEffect(() => {
-    if (entityId && !entityProps) {
-      console.log('getting loop')
-      dispatch(getLoop({ id: entityId }))
+    if (entityPlayer) {
+      setLoadedPlayer(true)
     }
-  }, [])
+  }, [entityPlayer])
 
-  // 2nd (WHEN entityProps are loaded): get audio for the track's associated entity
-  useEffect(() => {
-    if (entityProps && !arrayBuffer && !loadingAudio) {
-      console.log('loading audio')
-      setLoadingAudio(true)
-      Axios.get<ArrayBuffer>(`${REST_URI}/loops/audio/${entityId}`, {
-        responseType: 'arraybuffer',
-      }).then(res => {
-        console.log(res)
-        setArrayBuffer(res.data)
-        console.log('setting array buffer: ', res.data)
-        setLoadingAudio(false)
-      })
-    }
+  // // FIRST: if unavailable, get entityProps for the track's associated entity
+  // useEffect(() => {
+  //   if (entityId && !entityProps) {
+  //     dispatch(getLoop({ id: entityId }))
+  //   }
+  // }, [])
 
-    return () => {}
-  }, [entityProps])
+  // // 2nd (WHEN entityProps are loaded): set entityPlayer properties to match
+  // useEffect(() => {
+  //   if (entityProps && !entityPlayer && !loadingPlayer) {
+  //     // console.log('loading track player')
+  //     // setLoadingPlayer(true)
+  //     // Axios.get<ArrayBuffer>(`${REST_URI}/loops/audio/${entityId}`, {
+  //     //   responseType: 'arraybuffer',
+  //     // }).then(res => {
+  //     //   console.log(res)
+  //     //   setArrayBuffer(res.data)
+  //     //   console.log('setting array buffer: ', res.data)
+  //     //   setLoadingAudio(false)
+  //     // })
+  //   }
+
+  //   return () => {}
+  // }, [entityProps])
 
   // 3rd (WHEN sourceNode is ready and getPlaybackTime is available): setTimeout to update playhead position at a regular interval
   useEffect(() => {
       let timeCron = setTimeout(() => {
-        if (getPlaybackTime) {
-          setCurrentPlayhead(getPlaybackTime() || 0)
+        if (getPlaybackLocation) {
+          setCurrentPlayhead(getPlaybackLocation() || 0)
         }
-  
       }, 16);
   
       return(() => {
         clearTimeout(timeCron);
       })
   
-  }, [getPlaybackTime])
+  }, [getPlaybackLocation])
   
   // WHEN TrackImageContainer Ref is available: allow mousewheel to operate on this element without scrolling page
   useEffect(() => {
@@ -171,14 +183,14 @@ export const Track = ({ trackId, editing, perRow }: ITrackProps) => {
       e.preventDefault()
     }
 
-    if (entityProps) {
+    if (entity) {
       if (ref && ref.current) {
         ref!.current!.addEventListener('wheel', preventWheelDefault)
       }
     }
 
     return () => {
-      if (entityProps && ref && ref.current) {
+      if (entity && ref && ref.current) {
         ref!.current!.removeEventListener('wheel', preventWheelDefault)
       }
     }
@@ -187,12 +199,12 @@ export const Track = ({ trackId, editing, perRow }: ITrackProps) => {
   // HELPER FUNCTIONS
   // toggle playback
   function togglePlay() {
-    if (sourceNode) {
+    if (entityPlayer) {
       if (!playing) {
-        startPlayback()
+        startPlaybackNow()
         setPlaying(true)
       } else {
-        stopPlayback()
+        stopPlaybackNow()
         setPlaying(false)
         setCurrentPlayhead(0)
       }
@@ -200,14 +212,13 @@ export const Track = ({ trackId, editing, perRow }: ITrackProps) => {
   }
   // handle mousewheel input as gain control
   function handleGainScroll(e: React.WheelEvent<HTMLDivElement>) {
-    if (gainNode) {
-      console.log(e.deltaX, e.deltaY)
+    if (entityPlayer) {
       if (e.deltaY > 0) {
-        gainDown()
-        setCurrentGain(gainNode.gain.value)
+        volumeDown()
+        setCurrentVolume(getVolume() || 0)
       } else if (e.deltaY < 0) {
-        gainUp()
-        setCurrentGain(gainNode.gain.value)
+        volumeUp()
+        setCurrentVolume(getVolume() || 0)
       }
     }
   }
@@ -215,16 +226,17 @@ export const Track = ({ trackId, editing, perRow }: ITrackProps) => {
   return (
     <TrackWrapper perRow={3}>
       <TrackImageContainer ref={ref} onWheel={handleGainScroll}>
-        { sourceBuffer &&
+        { entityPlayer && entityPlayer.loaded && sourceBuffer &&
           <TrackImageKonva 
             audioBuffer={sourceBuffer}
-            sourceNode={sourceNode as AudioBufferSourceNode}
+            entityPlayer={entityPlayer}
             currentPlayhead={currentPlayhead}
             width={90}
             height={90}
-            gain={currentGain}
-            outerMargin={5}
+            volume={getGain() || 0}
+            outerMargin={2}
             innerMargin={15}
+            toggleReverse={toggleReverse}
           />
         }
         {playing ? (
