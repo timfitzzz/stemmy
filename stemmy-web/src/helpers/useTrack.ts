@@ -79,6 +79,7 @@ export default ({id, player}: IuseTrackOptions): OuseTrack => {
         true
   )
 
+  
 
   useEffect(() => {
     if (!track) {
