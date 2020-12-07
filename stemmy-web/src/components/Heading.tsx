@@ -6,6 +6,7 @@ interface IHeadingProps {
   title: string
   subtitle?: string
   link?: string
+  className?: string
 }
 
 const Wrapper = styled.div`
@@ -13,7 +14,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   text-align: left;
   color: white;
-  width: 100%;
+  /* width: 100%; */
 `
 
 export const Title = styled.h1`
@@ -25,9 +26,9 @@ export const Subtitle = styled.p`
   margin-top: 2px;
 `
 
-export default ({ title, subtitle, link}: IHeadingProps) => {
+export default ({ className, title, subtitle, link}: IHeadingProps) => {
   return (
-    <Wrapper>
+    <Wrapper className={className}>
       <Title> 
         { link ? (
           <Link to={link}>{title}</Link>

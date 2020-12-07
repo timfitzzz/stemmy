@@ -1,13 +1,14 @@
-import React, { useState, useContext, useEffect } from 'react'
+import React, { useState, useContext, useEffect, Context } from 'react'
 import styled from 'styled-components'
 import { ProjectActionTypes } from '../../../store/projects'
 import { ProjectProps } from '../../../types'
 import TracksEditor from './TracksEditor'
 import ProjectSettingsEditor from './ProjectSettingsEditor'
 import useTransport from '../../../helpers/useTransport'
-import ContextForAudio, { IContextForAudio } from '../../../helpers/audioContext'
+import ContextForAudio, { OAudioEngine } from '../../../helpers/audioContext'
 import { Panel, PanelWrapper } from '../../Panel';
 import { useProject } from '../../../helpers/useProject'
+import { useContextSelector } from 'react-use-context-selector';
 
 
 const ProjectEditorWrapper = styled(PanelWrapper)`
@@ -39,19 +40,16 @@ interface ProjectEditorProps {
   projectId: string
 }
 
-export default ({
+const ProjectEditor = function({
   projectId
-}: ProjectEditorProps) => {
+}: ProjectEditorProps) {
 
   const { project } = useProject({ id: projectId, props: [ 'name', 'tracks']})
 
-  const [name, setName] = useState(project ? project.name : null)
-  const [tracks, setTracks] = useState(project ? project.tracks : null)
+  const setCurrentProject = useContextSelector(ContextForAudio as Context<OAudioEngine>, value => value.setCurrentProject)
+  const clearCurrentProject = useContextSelector(ContextForAudio as Context<OAudioEngine>, value => value.clearCurrentProject)
 
-  const contextObj: Partial<IContextForAudio> = useContext(ContextForAudio)
-  const { setCurrentProject, clearCurrentProject } = contextObj;
-
-  const { transportSet, unsetTransport, Transport } = useTransport({
+  const { transportSet, unsetTransport, start, stop, isPlaying } = useTransport({
     projectId: project ? project.id : undefined,
     projectClock: project ? project.clock : undefined
   });
@@ -66,7 +64,16 @@ export default ({
         clearCurrentProject()
       }
     }
-  }, [])
+  }, [project])
+
+  const toggleStartStop = () => {
+    console.log('playing: ', isPlaying())
+    if (isPlaying() && stop) {
+      stop()
+    } else if (!isPlaying() && start) {
+      start()
+    }
+  }
 
   return (
     <ProjectEditorWrapper>
@@ -74,8 +81,9 @@ export default ({
         <ProjectEditorFormFieldsWrapper>
           <ProjectSettingsEditor
             projectId={projectId}
-            registerTransportChange={unsetTransport}
+            registerTransportChange={() => {}} //unsetTransport
           />
+          <button onClick={(e) => {toggleStartStop()}}>Play</button>
         </ProjectEditorFormFieldsWrapper>
         <ProjectEditorSplitBorder />
         <TracksEditor 
@@ -85,3 +93,7 @@ export default ({
     </ProjectEditorWrapper>
   )
 }
+
+ProjectEditor.whyDidYouRender = true
+
+export default ProjectEditor

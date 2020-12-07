@@ -60,7 +60,7 @@ export default ({ children, location }: ILayoutProps) => {
   useEffect(() => {
     async function handleStartTone() {
       await Tone.start()
-      console.log('starting tone')
+      // console.log('starting tone')
       setStartedTone(true)
     }
 

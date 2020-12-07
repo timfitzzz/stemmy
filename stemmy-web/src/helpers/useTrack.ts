@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { getTrack } from '../store/tracks/actions'
 import { RootState } from '../store'
@@ -19,8 +19,6 @@ interface OuseTrack {
   player: {
     entityPlayer: Tone.Player | null
     sourceBuffer: Tone.ToneAudioBuffer | null
-    startPlaybackNow: () => Promise<void> | null
-    stopPlaybackNow: () => void | null
     getPlaybackLocation: () => number | null
     getPlaybackTime: () => number | null
     setVolume: (volume: number) => void | null
@@ -29,11 +27,15 @@ interface OuseTrack {
     volumeUp: () => void | null
     volumeDown: () => void | null
     toggleReverse: () => void | null
-    clearEntityPlayer: ((id: string) => void) | null
   }
 }
 
-export default ({id, player}: IuseTrackOptions): OuseTrack => {
+const useTrack = ({id, player}: IuseTrackOptions): OuseTrack => {
+
+  const [trackLoading, setTrackLoading] = useState<boolean>(false)
+  const [entityLoading, setEntityLoading] = useState<boolean>(false)
+
+  console.log('rendering useTrack')
 
   const dispatch = useDispatch();
 
@@ -61,8 +63,6 @@ export default ({id, player}: IuseTrackOptions): OuseTrack => {
   const {
     entityPlayer,
     sourceBuffer,
-    startPlaybackNow,
-    stopPlaybackNow,
     getPlaybackLocation,
     getPlaybackTime,
     setVolume,
@@ -71,7 +71,6 @@ export default ({id, player}: IuseTrackOptions): OuseTrack => {
     toggleReverse,
     volumeUp,
     volumeDown,
-    clearEntityPlayer
   } = useEntityPlayer(
         entity && entity.id ? getLoopAudioUrlById(entity.id!) : '', 
         [player], 
@@ -79,17 +78,28 @@ export default ({id, player}: IuseTrackOptions): OuseTrack => {
         true
   )
 
-  
+  console.log('entityPlayer: ', entityPlayer);
 
   useEffect(() => {
-    if (!track) {
+    console.log('running useTrack useEffect')
+    if (!track && !trackLoading) {
       // if track isn't in state, load the track from the server
       dispatch(getTrack(id))
-    } else if (track && track.entityId && !entity) {
+      setTrackLoading(true)
+    } 
+    else if (track && track.entityId && !entity && !entityLoading) {
       // if the entity (Loop, for now) isn't in state, load it from the server
+      setTrackLoading(false)
       dispatch(getLoop(track.entityId))
+      setEntityLoading(true)
     }
   }, [track])
+
+  useEffect(() => {
+    if (track && entity) {
+      setEntityLoading(false)
+    }
+  }, [entity])
 
   return {
     track,
@@ -97,8 +107,6 @@ export default ({id, player}: IuseTrackOptions): OuseTrack => {
     player: {
       entityPlayer: entityPlayer || null,
       sourceBuffer: sourceBuffer || null,
-      startPlaybackNow: startPlaybackNow || null,
-      stopPlaybackNow: stopPlaybackNow || null,
       getPlaybackLocation: getPlaybackLocation || null,
       getPlaybackTime: getPlaybackTime || null,
       setVolume: setVolume || null,
@@ -107,8 +115,9 @@ export default ({id, player}: IuseTrackOptions): OuseTrack => {
       volumeUp: volumeUp || null,
       volumeDown: volumeDown || null,
       toggleReverse: toggleReverse || null,
-      clearEntityPlayer: clearEntityPlayer || null
     }
   }
 
 }
+
+export default useTrack

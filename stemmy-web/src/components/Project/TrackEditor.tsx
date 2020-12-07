@@ -14,10 +14,10 @@ const TrackEditorContainer = styled.div`
 export const TrackEditor = ({ tracks, setTracks }: ITrackEditor) => {
   return (
     <TrackEditorContainer>
-      {tracks &&
+      {/* {tracks &&
         tracks.map(track => (
-          <Track trackId={track} editing={true} perRow={3} />
-        ))}
+          <Track trackId={track} editing={true} perRow={3} key={'track'+track} />
+        ))} */}
     </TrackEditorContainer>
   )
 }

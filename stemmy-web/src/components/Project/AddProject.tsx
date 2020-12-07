@@ -16,7 +16,7 @@ import { ProjectViews } from './Project'
 
 const AddProjectWrapper = styled.div`
   width: 100%;
-  max-width: 800px;
+  /* max-width: 800px; */
   display: flex;
   flex-direction: column;
   /* border: 5px solid ${p => p.theme.palette.midPrimary}; */
@@ -28,10 +28,13 @@ const AddProjectWrapper = styled.div`
 const AddProjectHeader = styled.div`
   display: flex;
   flex-direction: row;
+  justify-content: left;
 `
 
 const AddProjectHeading = styled(Heading)`
   color: ${p => p.theme.global.colors.midPrimary};
+  margin-right: ${p => p.theme.spacing.unit}px;
+  padding-right: ${p => p.theme.spacing.unit}px;
   > h1 {
     > a {
     text-decoration: none;
@@ -45,9 +48,9 @@ const AddProjectContentContainer = styled.div`
 `
 
 const LeftMenuPanel = styled.div`
-  width: 250px;
-  min-width: 250px;
-  max-width: 250px;
+  width: 300px;
+  /* min-width: 300px;
+  max-width: 300px; */
 
   display: flex;
   flex-direction: column;
@@ -57,7 +60,6 @@ const TopMenuPanel = styled.div`
   width: 500px;
   min-width: 500px;
   max-width: 500px;
-
   display: flex;
   flex-direction: row;
   margin-top: auto;

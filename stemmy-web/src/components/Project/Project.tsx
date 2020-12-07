@@ -18,7 +18,9 @@ interface IProjectView {
   projectId?: string
 }
 
-export default ({view, projectId}: IProjectView) => {
+const Project = function({view, projectId}: IProjectView) {
+
+  console.log('rendered project')
 
   const props = useMemo<(keyof ProjectProps)[]>(() => {
     switch (view) {
@@ -34,8 +36,8 @@ export default ({view, projectId}: IProjectView) => {
   const { project } = useProject({ id: projectId, props })
 
 
-  console.log(props)
-  console.log(project)
+  // console.log(props)
+  // console.log(project)
 
   const projectProps = useMemo(() => (project ? Object.assign({},
     ...props.map((prop) => ({
@@ -55,3 +57,5 @@ export default ({view, projectId}: IProjectView) => {
     </>
   )
 }
+
+export default Project

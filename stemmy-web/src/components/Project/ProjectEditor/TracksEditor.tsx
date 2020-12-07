@@ -26,17 +26,15 @@ interface TracksEditorProps {
   projectId: string
 }
 
-export default ({ projectId }: TracksEditorProps) => {
+const TrackEditor = ({ projectId }: TracksEditorProps) => {
 
-  const { project, addTrackFromFile } = useProject ({ id: projectId })
+  const { project, addTrackFromFile } = useProject({ id: projectId })
 
   const trackIds = project ? project.tracks : null
 
   const [hover, setHover] = useState(false)
   const [dragTarget, setDragTarget] = useState<HTMLElement>()
   const [dragCounter, setDragCounter] = useState<number>(0)
-
-  const dispatch = useDispatch()
 
   // function getTracksStateSetter<T>(prop: ) {
   //   return (value: T) =>
@@ -95,9 +93,11 @@ export default ({ projectId }: TracksEditorProps) => {
       <TracksWrapper>
         {trackIds &&
           trackIds.map(trackId => (
-            <Track trackId={trackId} editing={true} perRow={3} asPlayer={true}/>
+            <Track trackId={trackId} editing={true} perRow={3} asPlayer={true} key={'track'+trackId}/>
           ))}
       </TracksWrapper>
     </TracksEditorWrapper>
   )
 }
+
+export default TrackEditor

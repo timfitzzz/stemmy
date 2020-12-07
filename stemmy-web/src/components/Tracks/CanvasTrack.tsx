@@ -49,22 +49,22 @@ export const Track = ({ trackId, editing, perRow }: ITrackProps) => {
   // get props for the track's associated entity
   useEffect(() => {
     if (entityId && !entityProps) {
-      console.log('getting loop')
-      dispatch(getLoop({ id: entityId }))
+      // console.log('getting loop')
+      dispatch(getLoop(entityId))
     }
   })
 
   // get audio for the track's associated entity
   useEffect(() => {
     if (entityProps && !arrayBuffer && !loadingAudio) {
-      console.log('loading audio')
+      // console.log('loading audio')
       setLoadingAudio(true)
       Axios.get<ArrayBuffer>(`${REST_URI}/loops/audio/${entityId}`, {
         responseType: 'arraybuffer',
       }).then(res => {
-        console.log(res)
+        // console.log(res)
         setArrayBuffer(res.data)
-        console.log('setting array buffer: ', res.data)
+        // console.log('setting array buffer: ', res.data)
         setLoadingAudio(false)
       })
     }
@@ -104,9 +104,9 @@ export const Track = ({ trackId, editing, perRow }: ITrackProps) => {
   }
 
   function handleGainScroll(e: React.WheelEvent<HTMLDivElement>) {
-    console.log(gainNode)
+    // console.log(gainNode)
     if (gainNode) {
-      console.log(e.deltaX, e.deltaY)
+      // console.log(e.deltaX, e.deltaY)
       if (e.deltaY > 0) {
         gainDown()
       } else if (e.deltaY < 0) {
@@ -124,7 +124,7 @@ export const Track = ({ trackId, editing, perRow }: ITrackProps) => {
         <TrackVolumeDisplay />
         {playing ? (
           <TrackPauseButton onClick={togglePlay} />
-        ) : (2
+        ) : (
           <TrackPlayButton onClick={togglePlay} />
         )}
       </TrackImageContainer>

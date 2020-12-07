@@ -55,20 +55,18 @@ const DraftListItemWrapper = styled.div<{ hover: boolean, selected: boolean}>`
   }
 `
 
-export default ({children, onSelect}: IDraftProjectsPanel) => {
+const DraftProjectsBrowser = function({children, onSelect}: IDraftProjectsPanel) {
 
   const { projects } = useProjects({ type: 'drafts', props: ['id'] })
   const [hover, setHover] = useState<number | null>(null)
   const [selected, setSelected] = useState<number | null>(0)
 
-  useEffect(() => {
-    if (projects && selected && projects[selected]) {
-      let id = projects[selected].id
-      if (id) {
-        onSelect(id)
-      }
+  function handleSelect(i: number) {
+    setSelected(i)
+    if (projects && projects[i] && projects[i].id) {
+      onSelect(projects[i].id!)
     }
-  },[selected])
+  }
 
   return (
     <DraftProjectsPanelWrapper>
@@ -79,7 +77,7 @@ export default ({children, onSelect}: IDraftProjectsPanel) => {
           <DraftListItemWrapper 
             onMouseOver={() => setHover(i)} 
             hover={hover === i ? true : false}
-            onClick={(e) => setSelected(i)}
+            onClick={(e) => handleSelect(i)}
             selected={selected === i ? true : false}
           >
             <Project projectId={project.id} view={ProjectViews.basicList}/>
@@ -90,3 +88,5 @@ export default ({children, onSelect}: IDraftProjectsPanel) => {
   )
 
 }
+
+export default DraftProjectsBrowser

@@ -81,7 +81,7 @@ export const getNewLoop = (
 
   try {
     const newLoop = await API.getNewLoopFromAudioFile(loopProps, fileData)
-    console.log(newLoop)
+    // console.log(newLoop)
     dispatch(saveLoopDataSuccess(loopProps, newLoop.data[0]))
   } catch (err) {
     dispatch(saveLoopDataFail(loopProps, err))

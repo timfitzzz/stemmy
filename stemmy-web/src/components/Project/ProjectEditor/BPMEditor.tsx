@@ -13,7 +13,7 @@ interface BPMEditorFields {
   BPM: number
   setBPM?: (value: number) => void
   originalBPM?: number
-  disabled: boolean
+  // disabled: boolean
   saveHandler: () => void
 }
 
@@ -35,7 +35,7 @@ export default ({
   BPM,
   setBPM,
   originalBPM,
-  disabled,
+  // disabled,
   saveHandler,
 }: BPMEditorFields) => {
   return (

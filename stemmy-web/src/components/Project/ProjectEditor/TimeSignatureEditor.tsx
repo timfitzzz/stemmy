@@ -10,7 +10,7 @@ import { Slider } from '../../Slider'
 interface TimeSignatureEditorFields {
   beatsPerBar: number
   setBeatsPerBar: (bpb: number) => void
-  disabled: boolean
+  // disabled: boolean
   saveHandler: () => void
 }
 
@@ -31,7 +31,7 @@ const TimeSignatureEditorSlider = styled(Slider)`
 export default ({
   beatsPerBar,
   setBeatsPerBar,
-  disabled,
+  // disabled,
   saveHandler,
 }: TimeSignatureEditorFields) => {
   return (

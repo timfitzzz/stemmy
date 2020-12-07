@@ -2,7 +2,9 @@ import { addTypenameToDocument } from '@apollo/client/utilities'
 import { useEffect, useContext, useState } from 'react'
 import { Gain, Player, ToneAudioBuffer, ToneAudioNode } from 'tone'
 import * as Tone from 'tone'
-import ContextForAudio, { IContextForAudio } from './audioContext'
+import ContextForAudio, { OAudioEngine } from './audioContext'
+import { useContextSelector } from 'react-use-context-selector'
+import { Context } from '@apollo/client'
 
 function dependenciesMet(dependencies: any[]) {
   let passed = true
@@ -32,97 +34,192 @@ export const useEntityPlayer = (
   //     -- create a toneaudiobuffer from it and store it in context
   //     -- create a player and store it in context
 
-  let contextObj: Partial<IContextForAudio> = useContext(ContextForAudio)
-  let [entityPlayer, setEntityPlayer] = useState<Player | null>(null)
+  // get functions
+  let [
+    dispatch,
+    isAudioReady,
+    loadBufferFromURL,
+    makePlayerFromBuffer,
+    queuePlayback,
+    unqueuePlayback
+  ] = useContextSelector(ContextForAudio, (value: Partial<OAudioEngine>) => [
+    value.dispatch || null,
+    value.isAudioReady || null,
+    value.loadBufferFromURL || null,
+    value.makePlayerFromBuffer || null,
+    value.queuePlayback || null,
+    value.unqueuePlayback || null
+    ]
+  )
+
+  // get library contents
+
+  let sourceBuffer: ToneAudioBuffer | null = useContextSelector(ContextForAudio as React.Context<OAudioEngine>,
+      (value: OAudioEngine) => {
+        // console.log(value)
+       return entityId ? value.entitySourceBuffers[entityId] || null : null
+      })
+
+  let entityPlayer: Player | null = useContextSelector(ContextForAudio as React.Context<OAudioEngine>, 
+      (value: OAudioEngine) => entityId || entityUrl ? value.entityPlayers[entityId || entityUrl] || null : null)
+
+  // console.log(entityUrl, entityId, sourceBuffer, entityPlayer);
+
+
+  // let [entityPlayer, setEntityPlayer] = useState<Player | null>(null)
   let [startTime, setStartTime] = useState<number | null>(null)
+  let [readyToPlay, setReadyToPlay] = useState<boolean>(false)
+  let [loadingBuffer, setLoadingBuffer] = useState<boolean>(false)
+  let [loadingPlayer, setLoadingPlayer] = useState<boolean>(false)
+  let [scheduleId, setScheduleId] = useState<number | null>(null)
+
   // let [gettingNode, setGettingNode] = useState<boolean>(false)
   // let [nodeReady, setNodeReady] = useState<boolean>(false)
 
-  let {
-    Transport,
-    audioCtx,
-    masterGainNode,
-    getSourceBuffer,
-    getEntityPlayer,
-    upsertSourceBuffer,
-    upsertEntityPlayer,
-    clearEntityPlayer,
-  } = contextObj
+  // let {
+  //   Transport,
+  //   audioCtx,
+  //   getSourceBuffer,
+  //   getEntityPlayer,
+  //   upsertSourceBuffer,
+  //   upsertEntityPlayer,
+  //   clearEntityPlayer,
+  // } = contextObj
+
+  debugOn && console.log(
+    isAudioReady &&
+    isAudioReady() &&
+    queuePlayback &&
+    loadBufferFromURL &&
+    makePlayerFromBuffer &&
+    dependenciesMet(dependencies) &&
+    entityId ? 'useEffect conditions passed' : 'useEffect conditions failed' )
 
   useEffect(() => {
     if (
-      audioCtx &&
-      masterGainNode &&
+      isAudioReady &&
+      isAudioReady() &&
+      queuePlayback &&
+      loadBufferFromURL &&
+      makePlayerFromBuffer &&
       dependenciesMet(dependencies) &&
-      entityUrl,
       entityId
     ) {
-      debugOn && console.log('-- found ctx, data, dependencies, entityid')
-      // check for entityPlayer in component state
-      if (!entityPlayer) {
-        // finding no entityPlayer in state, 
-        // check for the entityPlayer in the react audiocontext
-        debugOn && console.log('--- no entityPlayer in state')
-        let ctxEntityPlayer = getEntityPlayer!(entityId)
-        if (!ctxEntityPlayer) {
-          // finding no entityPlayer in the react context, 
-          // check for the entity's ToneAudioBuffer in the react context
-          debugOn && console.log('---- no entityPlayer in context')
-          let ctxSourceBuffer = getSourceBuffer!(entityId)
-          if (!ctxSourceBuffer) {
-            // finding no ToneAudioBuffer in the react context,
-            // create one from the provided url
-            debugOn && console.log(
-              '----- no ToneAudioBuffer in context, creating one for provided url'
-            )
-            let newBuffer = new ToneAudioBuffer(entityUrl, (buffer) => {
-              console.log('------ decoded audio data, adding it to context')
-              upsertSourceBuffer!(entityId, buffer)
-            })
-          } else {
-            // Having found a ToneAudioBuffer in the react context,
-            // create an entityPlayer and add it to state
-            debugOn && console.log(
-              '----- found ToneAudioBuffer in context, creating entityPlayer'
-            )
-            let player = new Player({
-              url: entityUrl,
-              loop: true,
-              onerror: (err) => console.log(err),
-              onload: () => {
-                debugOn && console.log('upserting entityPlayer', player)
-                upsertEntityPlayer!(entityId, player)
-              }
-            }).toDestination()
-          }
-        } else {
-          // Having found a Player in the react context,
-          // set it in local state
-          debugOn && console.log(
-            '--- player found in context, setting it as return state'
-          )
-          setEntityPlayer(ctxEntityPlayer)
+
+      debugOn && console.log('-- found ctx, dependencies, entityid')
+      // check for entityPlayer or expectation of one in audioengine library store
+      if (!entityPlayer && !loadingPlayer) {
+        debugOn && console.log('--- no entityplayer & player not loading, checking for source buffer')
+        // is there a source buffer (or expectation of one) for the player?
+        if (!sourceBuffer && !loadingBuffer) {
+          debugOn && console.log('--- no sourcebuffer and buffer not loading, requesting buffer load')
+          loadBufferFromURL(entityId, entityUrl) // request buffer load
+          setLoadingBuffer(true) // note that we are waiting for buffer to load
+        } else if (sourceBuffer && loadingBuffer) {
+          debugOn && console.log('--- buffer found after load requested, requesting create entity player')
+          setLoadingBuffer(false)
+          setLoadingPlayer(true)
+          makePlayerFromBuffer(entityId)
+          debugOn && console.log('called makePlayerFromBuffer');
         }
       } else {
-        debugOn && console.log('--- entityPlayer already in state, will return')
+        // if there's no player but one is loading we'll do nothing
+        // if there is a player, set it to play
+        if (entityPlayer) {
+
+          if (loadingPlayer) {
+            debugOn && console.log('--- found player after requesting load, marking loaded')
+            setLoadingPlayer(false)
+          } else {
+            debugOn && console.log('--- found player')
+          }
+
+          // player exists, but is it set to play?
+          // if so, we're good. if not:
+          if (!readyToPlay) {
+            debugOn && console.log('--- player not ready, readying player')
+            // setScheduleId(queuePlayback(entityId))
+            setReadyToPlay(true)
+            debugOn && console.log('--- player ready for transport.start()')
+          }
+
+        }
       }
     }
-  })
 
-  async function startPlaybackNow() {
-    if (entityPlayer) {
-      entityPlayer.start()
-      setStartTime(Tone.now())
-      Transport?.start()
-    }
-  }
+    // TODO: use scheduleId to unschedule when component is unmounted
 
-  function stopPlaybackNow() {
-    if (entityPlayer) {
-      entityPlayer.stop()
-      setStartTime(null)
-    }
-  }
+    // // we need to unqueue playback when the hook is unmounted.
+    // return (() => {
+    //   if (unqueuePlayback && entityId) {
+    //     unqueuePlayback(entityId)
+    //   }
+    // })
+  }, [entityId, entityUrl, entityPlayer, sourceBuffer, readyToPlay])
+      
+      // bits of old hook for reference
+      //   // // finding no entityPlayer in state, 
+      //   // // check for the entityPlayer in the react audiocontext
+      //   // debugOn && console.log('--- no entityPlayer in state')
+      //   // let ctxEntityPlayer = getEntityPlayer!(entityId)
+      //   // if (!ctxEntityPlayer) {
+      //     // finding no entityPlayer in the react context, 
+      //     // check for the entity's ToneAudioBuffer in the react context
+      //     debugOn && console.log('---- no entityPlayer in context')
+      //     let ctxSourceBuffer = getSourceBuffer!(entityId)
+      //     if (!ctxSourceBuffer) {
+      //       // finding no ToneAudioBuffer in the react context,
+      //       // create one from the provided url
+      //       debugOn && console.log(
+      //         '----- no ToneAudioBuffer in context, creating one for provided url'
+      //       )
+      //       let newBuffer = new ToneAudioBuffer(entityUrl, (buffer) => {
+      //         debugOn && console.log('------ decoded audio data, adding it to context')
+      //         upsertSourceBuffer!(entityId, buffer)
+      //       })
+      //     } else {
+      //       // Having found a ToneAudioBuffer in the react context,
+      //       // create an entityPlayer and add it to state
+      //       debugOn && console.log(
+      //         '----- found ToneAudioBuffer in context, creating entityPlayer'
+      //       )
+      //       let player = new Player({
+      //         url: entityUrl,
+      //         loop: true,
+      //         onerror: (err) => console.log(err),
+      //         onload: () => {
+      //           debugOn && console.log('upserting entityPlayer', player)
+      //           upsertEntityPlayer!(entityId, player)
+      //         }
+      //       }).toDestination()
+      //     }
+      //   } else {
+      //     // Having found a Player in the react context,
+      //     // set it in local state
+      //     debugOn && console.log(
+      //       '--- player found in context, setting it as return state'
+      //     )
+      //     setEntityPlayer(ctxEntityPlayer)
+      //   }
+      // } else {
+      //   debugOn && console.log('--- entityPlayer already in state, will return')
+      // }
+
+
+  // async function startPlaybackNow() {
+  //   if (entityPlayer) {
+  //     entityPlayer.start()
+  //     setStartTime(Tone.now())
+  //     Transport?.start()
+  //   }
+  // }
+
+  // function stopPlaybackNow() {
+  //   if (entityPlayer) {
+  //     entityPlayer.stop()
+  //     setStartTime(null)
+  //   }
+  // }
 
   function getVolume(): number | null {
     if (entityPlayer) {
@@ -252,10 +349,8 @@ export const useEntityPlayer = (
   }
 
   return {
-    sourceBuffer: entityId ? getSourceBuffer!(entityId) : null,
+    sourceBuffer,
     entityPlayer,
-    startPlaybackNow,
-    stopPlaybackNow,
     getPlaybackLocation,
     getPlaybackTime,
     setVolume,
@@ -264,7 +359,6 @@ export const useEntityPlayer = (
     volumeUp,
     volumeDown,
     toggleReverse,
-    clearEntityPlayer,
   }
 }
 

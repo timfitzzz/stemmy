@@ -45,9 +45,9 @@ export const Handle: React.FC<HandleProps> = ({
   disabled = false,
   getHandleProps,
 }) => {
-  console.log(id)
-  console.log(value)
-  console.log(getHandleProps(id))
+  // console.log(id)
+  // console.log(value)
+  // console.log(getHandleProps(id))
   return (
     <>
       <HandleDiv1 percent={percent} {...getHandleProps(id)} />

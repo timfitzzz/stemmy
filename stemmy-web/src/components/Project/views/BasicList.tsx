@@ -47,9 +47,9 @@ const BasicListInfoDesc = styled.span`
 const BasicListInfoData = styled.span`
 `
 
-export default ({id, name, tracks, draft}: IProjectBasicView) => {
+const BasicList = function({id, name, tracks, draft}: IProjectBasicView) {
 
-  console.log(id, name, tracks, draft )
+  // console.log(id, name, tracks, draft )
 
   return (
     <BasicListWrapper>
@@ -70,3 +70,5 @@ export default ({id, name, tracks, draft}: IProjectBasicView) => {
     </BasicListWrapper>
   )
 }
+
+export default BasicList

@@ -52,7 +52,7 @@ export default ({ id, tracks, clock, name }: ProjectPlayerProps) => {
     },
   })
 
-  console.log(queryData)
+  // console.log(queryData)
 
   return (
     <ProjectPlayerContainer>

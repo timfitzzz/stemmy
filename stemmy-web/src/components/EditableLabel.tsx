@@ -49,12 +49,12 @@ export default ({
       null !== inputNode.current &&
       !inputNode.current.contains(e.target as HTMLElement)
     ) {
-      console.log(
-        'current: ',
-        inputNode.current,
-        ' contains: ',
-        e.currentTarget
-      )
+      // console.log(
+      //   'current: ',
+      //   inputNode.current,
+      //   ' contains: ',
+      //   e.currentTarget
+      // )
       exitEditor()
     }
   }

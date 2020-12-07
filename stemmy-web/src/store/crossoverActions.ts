@@ -47,7 +47,7 @@ export const addTrackAndEntityFromAudioFile = (
 
   try {
     newLoop = (await API.getNewLoopFromAudioFile(loopProps, fileData)).data[0]
-    console.log(newLoop)
+    // console.log(newLoop)
     dispatch(saveLoopDataSuccess(loopProps, newLoop))
   } catch (err) {
     dispatch(saveLoopDataFail(loopProps, err))

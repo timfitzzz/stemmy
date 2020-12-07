@@ -1,4 +1,4 @@
-import React, { MouseEvent, UIEvent, useEffect, useRef, useState } from 'react'
+import React, { MouseEvent, UIEvent, useEffect, useReducer, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store'
 import styled from 'styled-components'
@@ -87,21 +87,89 @@ export const TrackVolumeDisplay = styled.div`
   box-sizing: border-box;
 `
 
-export const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
-  
+const defaultTrackState = {
+  loadedPlayer: false,
+  loadingPlayer: false,
+  playing: false,
+  currentVolume: 0,
+  currentPlayhead: 0
+}
+
+interface TrackState {
+  loadedPlayer: boolean
+  loadingPlayer: boolean
+  playing: boolean
+  currentVolume: number
+  currentPlayhead: number
+}
+
+type TrackActions = 
+  | { type: 'loadedPlayer' }
+  | { type: 'loadingPlayer' }
+  | { type: 'setPlaying' }
+  | { type: 'unsetPlaying' }
+  | { type: 'setCurrentVolume', volume: number }
+  | { type: 'setCurrentPlayhead', location: number }
+
+function TrackReducer(state: TrackState, action: TrackActions) {
+  console.log('track reducer called, ', action)
+  switch (action.type) {
+    case 'loadedPlayer': 
+      return {
+        ...state,
+        loadedPlayer: true,
+        loadingPlayer: false
+      }
+    case 'loadingPlayer':
+      return {
+        ...state,
+        loadingPlayer: true,
+        loadedPlayer: false
+      }
+    case 'setPlaying':
+      return {
+        ...state,
+        playing: true
+      }
+    case 'unsetPlaying':
+      return {
+        ...state,
+        playing: false
+      }
+    case 'setCurrentVolume':
+      return {
+        ...state,
+        currentVolume: action.volume
+      }
+    case 'setCurrentPlayhead':
+      return {
+        ...state,
+        currentPlayhead: action.location
+      }
+  }
+}
+
+const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
+
+  console.log('rendering Track')
+
+
+  const [{ 
+    loadedPlayer, 
+    loadingPlayer, 
+    playing, 
+    currentVolume, 
+    currentPlayhead
+  }, localDispatch ] = useReducer(TrackReducer, defaultTrackState)
+
   // entityPlayer state -- will be loaded in useEffect below
   // let [entityPlayer, setEntityPlayer] = useState<Player | null>(null)
-  let [loadedPlayer, setLoadedPlayer] = useState<boolean>(false)
-  let [loadingPlayer, setLoadingPlayer] = useState<boolean>(false)
-  let [playing, setPlaying] = useState<boolean>(false)
   let ref = useRef<HTMLDivElement>(null)
-  let [currentVolume, setCurrentVolume] = useState(0);
 
-  const dispatch = useDispatch()
+  // const dispatch = useDispatch()
 
-  let [currentPlayhead, setCurrentPlayhead] = useState(0);
 
-  let { track, entity, player } = useTrack({id: trackId, player: asPlayer})
+  let { entity, player } = useTrack({id: trackId, player: true})
 
   // // GET entityProps from Redux store (if available)
   // const entityProps: LoopProps | null = useSelector<
@@ -115,14 +183,10 @@ export const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps
   //   }
   // })
 
-  console.log(player)
-
   //  get sourceNode state from useSourceNode hook (mostly null on first render)
   const {
     entityPlayer,
     sourceBuffer,
-    startPlaybackNow,
-    stopPlaybackNow,
     getPlaybackLocation,
     getPlaybackTime,
     getVolume,
@@ -133,8 +197,8 @@ export const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps
   } = player
 
   useEffect(() => {
-    if (entityPlayer) {
-      setLoadedPlayer(true)
+    if (entityPlayer && !loadedPlayer) {
+      localDispatch({ type: 'loadedPlayer' })
     }
   }, [entityPlayer])
 
@@ -144,6 +208,18 @@ export const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps
   //     dispatch(getLoop({ id: entityId }))
   //   }
   // }, [])
+
+  console.log('loaded track player :', loadedPlayer)
+  console.log('loading track player :', loadingPlayer)
+
+  useEffect(() => {
+    console.log('running track useeffect');
+    if (entity && !entityPlayer && !loadingPlayer) {
+      localDispatch({type: 'loadingPlayer'})
+    } else if (entity && entityPlayer && loadingPlayer) {
+      localDispatch({type: 'loadedPlayer'})
+    }
+  }, [entityPlayer, loadedPlayer, loadingPlayer])
 
   // // 2nd (WHEN entityProps are loaded): set entityPlayer properties to match
   // useEffect(() => {
@@ -164,18 +240,18 @@ export const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps
   // }, [entityProps])
 
   // 3rd (WHEN sourceNode is ready and getPlaybackTime is available): setTimeout to update playhead position at a regular interval
-  useEffect(() => {
-      let timeCron = setTimeout(() => {
-        if (getPlaybackLocation) {
-          setCurrentPlayhead(getPlaybackLocation() || 0)
-        }
-      }, 16);
+  // useEffect(() => {
+  //     // let timeCron = setTimeout(() => {
+  //     //   if (getPlaybackLocation) {
+  //     //     localDispatch({ type: 'setCurrentPlayhead', location: getPlaybackLocation() || 0 })
+  //     //   }
+  //     // }, 16);
   
-      return(() => {
-        clearTimeout(timeCron);
-      })
+  //     // return(() => {
+  //     //   clearTimeout(timeCron);
+  //     // })
   
-  }, [getPlaybackLocation])
+  // }, [getPlaybackLocation])
   
   // WHEN TrackImageContainer Ref is available: allow mousewheel to operate on this element without scrolling page
   useEffect(() => {
@@ -196,38 +272,38 @@ export const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps
     }
   }, [ref])
 
-  // HELPER FUNCTIONS
-  // toggle playback
-  function togglePlay() {
-    if (entityPlayer) {
-      if (!playing) {
-        startPlaybackNow()
-        setPlaying(true)
-      } else {
-        stopPlaybackNow()
-        setPlaying(false)
-        setCurrentPlayhead(0)
-      }
-    }
-  }
+  // // HELPER FUNCTIONS
+  // // toggle playback
+  // function togglePlay() {
+  //   if (entityPlayer) {
+  //     if (!playing) {
+  //       startPlaybackNow()
+  //       localDispatch({ type: 'setPlaying' })
+  //     } else {
+  //       stopPlaybackNow()
+  //       localDispatch({ type: 'unsetPlaying' })
+  //       localDispatch({ type: 'setCurrentPlayhead', location: 0})
+  //     }
+  //   }
+  // }
   // handle mousewheel input as gain control
   function handleGainScroll(e: React.WheelEvent<HTMLDivElement>) {
     if (entityPlayer) {
       if (e.deltaY > 0) {
         volumeDown()
-        setCurrentVolume(getVolume() || 0)
+        localDispatch({ type: 'setCurrentVolume', volume: getVolume() || 0 })
       } else if (e.deltaY < 0) {
         volumeUp()
-        setCurrentVolume(getVolume() || 0)
+        localDispatch({ type: 'setCurrentVolume', volume: getVolume() || 0 })
       }
     }
   }
 
   return (
     <TrackWrapper perRow={3}>
-      <TrackImageContainer ref={ref} onWheel={handleGainScroll}>
+     <TrackImageContainer onWheel={handleGainScroll}> 
         { entityPlayer && entityPlayer.loaded && sourceBuffer &&
-          <TrackImageKonva 
+          <TrackImageKonva ref={ref} 
             audioBuffer={sourceBuffer}
             entityPlayer={entityPlayer}
             currentPlayhead={currentPlayhead}
@@ -237,14 +313,19 @@ export const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps
             outerMargin={2}
             innerMargin={15}
             toggleReverse={toggleReverse}
+            key={'trackImage'+trackId}
           />
         }
-        {playing ? (
+        {/* {playing ? (
           <TrackPauseButton onClick={togglePlay} />
         ) : (
           <TrackPlayButton onClick={togglePlay} />
-        )}
+        )} */}
       </TrackImageContainer>
     </TrackWrapper>
   )
 }
+
+Track.whyDidYouRender = true;
+
+export { Track }

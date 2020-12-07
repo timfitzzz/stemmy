@@ -34,7 +34,7 @@ export const Slider: React.FC<SliderProps> = ({
   onUpdate,
   onChange,
 }) => {
-  console.log(values)
+  // console.log(values)
   return (
     <div className={className}>
       <StemmySlider
@@ -52,7 +52,7 @@ export const Slider: React.FC<SliderProps> = ({
           {({ handles, getHandleProps }) => (
             <div>
               {handles.map(handle => {
-                console.log(handle)
+                // console.log(handle)
                 return (
                   <Handle
                     key={handle.id}

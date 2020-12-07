@@ -1,8 +1,8 @@
-import { Transport } from 'tone'
-import { useContext, useEffect, useState } from 'react'
+import * as Tone from 'tone'
+import { useContext, Context, useEffect, useState } from 'react'
 import { ProjectClockSettings } from '../types'
-import ContextForAudio, { IContextForAudio } from './audioContext';
-import { Transport as ToneTransport } from 'tone';
+import ContextForAudio, { OAudioEngine } from './audioContext';
+import { useContextSelector } from 'react-use-context-selector';
 
 interface useTransportI {
   projectId?: string
@@ -12,46 +12,49 @@ interface useTransportI {
 
 interface useTransportO {
   transportSet: boolean
-  Transport: typeof ToneTransport | null
   unsetTransport: () => void
+  isPlaying: () => boolean
+  start: () => void
+  stop: () => void
 }
 
 export default ({projectId, projectClock}: useTransportI): useTransportO => {
 
+  // const [transport, setTransport] = useState<typeof ToneTransport | null>(null)
   const [transportSet, setTransportSet] = useState<boolean>(false)
   const [bpm, setBpm] = useState<number | null>(projectClock ? (projectClock.BPM ? projectClock.BPM : null) : null)
 
-  const {
-    Transport,
-    transportState,
-    isCurrentProject
-  }: Partial<IContextForAudio> = useContext(ContextForAudio)
-
-  const clockMatchesTransport = (): boolean | null => {
-    if (projectId && projectClock) {
-      return (Transport ? Transport.bpm.value === projectClock.BPM : null) && 
-           (Transport ? Transport.timeSignature === projectClock.beatsPerBar : null)
-    } else {
-      return null
-    }
-  }
+  const transportState = useContextSelector(ContextForAudio as Context<OAudioEngine>, value => value.transportState)
+  const isCurrentProject = useContextSelector(ContextForAudio as Context<OAudioEngine>, value => value.isCurrentProject)
+  const transport = useContextSelector(ContextForAudio as Context<OAudioEngine>, value => value.transport)
 
   const isCurrent = projectId && isCurrentProject ? isCurrentProject(projectId) : false
 
   const unsetTransport = () => setTransportSet(false);
 
+
+  console.log('transport vars:', Tone.Transport, transportState, transportSet)
+
+  // // if Transport isn't available in this object yet, make it so
+  // useEffect(() => {
+  //   if (!transport) {
+  //     setTransport(getTransport())
+  //   }
+  // }, [])
+
   // if this project is the current project, set the transport state to match its clock
   useEffect(() => {
-    if (Transport && transportState && !transportSet) {
-      if (!transportSet && isCurrent && projectClock && !clockMatchesTransport) { 
-        Transport.bpm.value = projectClock.BPM || 60
-        Transport.timeSignature = projectClock.beatsPerBar || 4
+    if (transportState && !transportSet) {
+      if (transport && !transportSet && isCurrent && projectClock && !clockMatchesTransport()) { 
+        transport.bpm.value = projectClock.BPM || 60
+        transport.timeSignature = projectClock.beatsPerBar || 4
+        debugger;
         setTransportSet(true)
       } else {
         setTransportSet(true)
       }
     }
-  }, [Transport, transportState])
+  }, [transportState, transportSet])
 
   // if the projectclock has changed
   useEffect(() => {
@@ -60,9 +63,27 @@ export default ({projectId, projectClock}: useTransportI): useTransportO => {
     }
   }, [projectClock])
 
+
+  const clockMatchesTransport = (): boolean | null => {
+    if (projectId && projectClock) {
+      return (transport ? transport.bpm.value === projectClock.BPM : null) && 
+           (transport ? transport.timeSignature === projectClock.beatsPerBar : null)
+    } else {
+      return null
+    }
+  }
+
+  const isPlaying = (): boolean => (transport && transport.state === 'started' ? true : false)
+
+  const start = (): void => { transport?.start() }
+
+  const stop = (): void => { transport?.stop() }
+
   return {
+    start,
+    stop,
+    isPlaying,
     transportSet,
-    unsetTransport,
-    Transport: Transport || null
+    unsetTransport
   }
 }

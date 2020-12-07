@@ -88,8 +88,6 @@ export default ({ projectId, registerTransportChange }: IAddProjectProps) => {
 
   const { project, saving, copy, commitCopy, getSetter, getClockSetter } = useProject({ id: projectId })
 
-  const [editing, setEditing] = useState<boolean>(true)
-
   function renderActivity() {
     return (
       <>
@@ -133,12 +131,12 @@ export default ({ projectId, registerTransportChange }: IAddProjectProps) => {
               setBPM={setBPM}
               originalBPM={copy.clock.originalBPM}
               saveHandler={handleSaveChange}
-              disabled={editing || copy.clock.BPMIsGuessed || true}
+              // disabled={editing || copy.clock.BPMIsGuessed || true}
             />
             <TimeSignatureEditor
               beatsPerBar={copy.clock.beatsPerBar || 4}
               setBeatsPerBar={setBeatsPerBar}
-              disabled={editing}
+              // disabled={editing}
               saveHandler={handleSaveChange}
             />
           </ClockSettingsContainer>
