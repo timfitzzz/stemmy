@@ -35,8 +35,6 @@ const useTrack = ({id, player}: IuseTrackOptions): OuseTrack => {
   const [trackLoading, setTrackLoading] = useState<boolean>(false)
   const [entityLoading, setEntityLoading] = useState<boolean>(false)
 
-  console.log('rendering useTrack')
-
   const dispatch = useDispatch();
 
   const track: TrackProps | null = useSelector<RootState, TrackProps | null>(state => {
@@ -55,10 +53,7 @@ const useTrack = ({id, player}: IuseTrackOptions): OuseTrack => {
       return null
     }
   })
-  
-  console.log(id)
-  console.log(track)
-  console.log(entity)
+
 
   const {
     entityPlayer,
@@ -78,10 +73,7 @@ const useTrack = ({id, player}: IuseTrackOptions): OuseTrack => {
         true
   )
 
-  console.log('entityPlayer: ', entityPlayer);
-
   useEffect(() => {
-    console.log('running useTrack useEffect')
     if (!track && !trackLoading) {
       // if track isn't in state, load the track from the server
       dispatch(getTrack(id))

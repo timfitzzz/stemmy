@@ -70,8 +70,8 @@ export type OAudioEngine = {
   isCurrentProject: (projectId: string) => boolean
   isNextProject: (projectId: string) => boolean
   isAudioReady: () => boolean
-  queuePlayback: (entityId: string, time?: string) => number | null
-  unqueuePlayback: (entityId: string) => void
+  queuePlayback: (entityId: string, time?: string) => () => void | null
+  unqueuePlayback: (entityId: string, scheduleId: number) => void
   startTransport: () => void
   stopTransport: () => void
   loadBufferFromURL: (entityId: string, entityUrl: string) => void
@@ -212,60 +212,91 @@ export const AudioProvider = ({
   }
 
   const makePlayerFromBuffer = (entityId: string) => {
-    console.log('got makePlayerFromBuffer call for entityId ', entityId)
+    // console.log('got makePlayerFromBuffer call for entityId ', entityId)
     if (library.entitySourceBuffers[entityId]) {
-      console.log('found sourceBuffer, creating new player from buffer: ', library.entitySourceBuffers[entityId])
+      // console.log('found sourceBuffer, creating new player from buffer: ', library.entitySourceBuffers[entityId])
       let player = new Player({
         url: library.entitySourceBuffers[entityId],
         loop: true,
         autostart: false,
         onerror: (err) => console.log(err),
-      }).sync().start(0).toDestination()
-      player.debug = true;
-      console.log('player loaded,upserting ', player)
+      }).toDestination()
+      // console.log('player loaded,upserting ', player)
       upsertEntityPlayer(entityId, player)
     }
   }
 
+  interface StartStopScheduleIds {
+    startId: number
+    stopId: number
+  }
+
+
+
   // library object control
-  const queuePlayback = (entityId: string, time: string = "0:0:0"): number => {
+  const queuePlayback = (entityId: string, time: string = "0:0:0"): () => void => {
+
+    // because the only way to stop the player from playing without having to synchronize transport and event players later
+    // is to add a per-player event listener to the 'stop' event emitted by transport, we'll return a callback to the player
+    // which it can run to easily deschedule both start and stop listeners.
+
+    console.log('queueing playback for ', entityId, ' at ', time);
     let player: Player;
 
-    if (player = library.entityPlayers[entityId]) {
-      let scheduleId = transport?.scheduleOnce(() => player.start(), time)
-      return scheduleId || -1
+    if ((player = library.entityPlayers[entityId]) && transport) {
+      let scheduleId = transport.schedule(() => player.start(), time)
+      let stopEvent = () => player.stop()
+      transport.on('stop', stopEvent)
+      console.log('schedule output', scheduleId, transport._scheduledEvents)
+
+      let unqueuingCallback = function() {
+        console.log('clearing scheduleId ', scheduleId)
+        transport.clear(scheduleId)
+        transport.off('stop', stopEvent)
+      }
+
+      return unqueuingCallback
     } else {
-      return -1
+      return () => {}
     }
   }
 
-  const unqueuePlayback = (entityId: string) => {
-    let player;
-    if (player = library.entityPlayers[entityId]) {
-      player.stop()
+  const unqueuePlayback = (entityId: string, scheduleId: number) => {
+    let player: Player;
+
+    if ((player = library.entityPlayers[entityId]) && transport) {
+      console.log(transport._scheduledEvents)
+      console.log('unqueueing playback for id ', scheduleId)
+      transport.clear(scheduleId)
+      transport.off('stop', () => { console.log('stopping for ', entityId ); player.stop()})
+      console.log(transport._scheduledEvents)
+    } else {
+      console.log('did not unqueue; could not find transport')
     }
   }
 
   // transport control functions
   const startTransport = (): void => {
     if (transport) {
+      console.log(transport._scheduledEvents)
       transport.start()
+      console.log(transport._scheduledEvents)
     }
   }
 
   const stopTransport = (): void => {
     if (transport) {
+      console.log(transport._scheduledEvents)
       transport.stop()
+      console.log(transport._scheduledEvents)
     }
   }
-
-
-
-
 
   useEffect(() => {
     if (window) {
       let audioContext = getContext()
+      let transport = getTransport()
+      // transport.debug = true
 
       setTransport(getTransport())
       setAudioContext(audioContext)

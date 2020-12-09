@@ -19,6 +19,7 @@ interface ITrackImageKonva {
   volume: number
   outerMargin: number
   innerMargin: number
+  ref?: any
 }
 
 export default ({audioBuffer, entityPlayer, toggleReverse, width, height, volume, outerMargin, innerMargin}: ITrackImageKonva) => {
@@ -65,7 +66,7 @@ export default ({audioBuffer, entityPlayer, toggleReverse, width, height, volume
   const transport = useContextSelector(ContextForAudio as Context<OAudioEngine>, value => value.transport ? value.transport : null)
   const transportSecs = useContextSelector(ContextForAudio as Context<OAudioEngine>, value => value.transport ? value.transport.seconds : null)
 
-  console.log(transportSecs)
+  // console.log(transportSecs)
 
 
   let circumferencePixels = useMemo(() => {

@@ -20,8 +20,6 @@ interface IProjectView {
 
 const Project = function({view, projectId}: IProjectView) {
 
-  console.log('rendered project')
-
   const props = useMemo<(keyof ProjectProps)[]>(() => {
     switch (view) {
       case ProjectViews.basicList:
@@ -34,10 +32,6 @@ const Project = function({view, projectId}: IProjectView) {
   }, [])
 
   const { project } = useProject({ id: projectId, props })
-
-
-  // console.log(props)
-  // console.log(project)
 
   const projectProps = useMemo(() => (project ? Object.assign({},
     ...props.map((prop) => ({

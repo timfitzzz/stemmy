@@ -35,23 +35,13 @@ export const useEntityPlayer = (
   //     -- create a player and store it in context
 
   // get functions
-  let [
-    dispatch,
-    isAudioReady,
-    loadBufferFromURL,
-    makePlayerFromBuffer,
-    queuePlayback,
-    unqueuePlayback
-  ] = useContextSelector(ContextForAudio, (value: Partial<OAudioEngine>) => [
-    value.dispatch || null,
-    value.isAudioReady || null,
-    value.loadBufferFromURL || null,
-    value.makePlayerFromBuffer || null,
-    value.queuePlayback || null,
-    value.unqueuePlayback || null
-    ]
-  )
-
+  let dispatch = useContextSelector(ContextForAudio, (value: Partial<OAudioEngine>) => value.dispatch)
+  let isAudioReady = useContextSelector(ContextForAudio, (value: Partial<OAudioEngine>) => value.isAudioReady)
+  let loadBufferFromURL = useContextSelector(ContextForAudio, (value: Partial<OAudioEngine>) => value.loadBufferFromURL)
+  let makePlayerFromBuffer = useContextSelector(ContextForAudio, (value: Partial<OAudioEngine>) => value.makePlayerFromBuffer)
+  let queuePlayback = useContextSelector(ContextForAudio, (value: Partial<OAudioEngine>) => value.queuePlayback)
+  let unqueuePlayback = useContextSelector(ContextForAudio, (value: Partial<OAudioEngine>) => value.unqueuePlayback)
+  
   // get library contents
 
   let sourceBuffer: ToneAudioBuffer | null = useContextSelector(ContextForAudio as React.Context<OAudioEngine>,
@@ -71,7 +61,7 @@ export const useEntityPlayer = (
   let [readyToPlay, setReadyToPlay] = useState<boolean>(false)
   let [loadingBuffer, setLoadingBuffer] = useState<boolean>(false)
   let [loadingPlayer, setLoadingPlayer] = useState<boolean>(false)
-  let [scheduleId, setScheduleId] = useState<number | null>(null)
+  let [unschedulingCb, setUnschedulingCb] = useState<(() => void) | null>(null)
 
   // let [gettingNode, setGettingNode] = useState<boolean>(false)
   // let [nodeReady, setNodeReady] = useState<boolean>(false)
@@ -138,7 +128,9 @@ export const useEntityPlayer = (
           // if so, we're good. if not:
           if (!readyToPlay) {
             debugOn && console.log('--- player not ready, readying player')
-            // setScheduleId(queuePlayback(entityId))
+            let unqueuingCallback = queuePlayback(entityId)
+            setUnschedulingCb(() => unqueuingCallback);
+            console.log(unschedulingCb)
             setReadyToPlay(true)
             debugOn && console.log('--- player ready for transport.start()')
           }
@@ -149,13 +141,17 @@ export const useEntityPlayer = (
 
     // TODO: use scheduleId to unschedule when component is unmounted
 
-    // // we need to unqueue playback when the hook is unmounted.
-    // return (() => {
-    //   if (unqueuePlayback && entityId) {
-    //     unqueuePlayback(entityId)
-    //   }
-    // })
-  }, [entityId, entityUrl, entityPlayer, sourceBuffer, readyToPlay])
+    // we need to unqueue playback when the hook is unmounted.
+    return () => {
+      console.log('running useEntityPlayer useEffect return on unmount for ', entityId)
+      console.log(unschedulingCb)
+      if (unschedulingCb) {
+        console.log('running unscheduling cb')
+        unschedulingCb()
+        setReadyToPlay(false)
+      }
+    }
+  }, [entityId, entityUrl, entityPlayer, sourceBuffer, readyToPlay, unschedulingCb])
       
       // bits of old hook for reference
       //   // // finding no entityPlayer in state, 
