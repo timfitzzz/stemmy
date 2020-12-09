@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useReducer, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { getTrack } from '../store/tracks/actions'
+import { getTrack, saveTrack, upsertTrack } from '../store/tracks/actions'
 import { RootState } from '../store'
 import { LoopProps, TrackProps } from '../types'
-import { getLoop } from '../store/loops/actions'
+import { getLoop, updateLoop, upsertLoop } from '../store/loops/actions'
 import { useEntityPlayer } from './useEntityPlayer'
 import { getLoopAudioUrlById } from '../rest'
 import Tone from 'tone'
@@ -11,11 +11,18 @@ import Tone from 'tone'
 interface IuseTrackOptions {
   id: string  // id of the track 
   player: boolean // return player for track?
+  editor: boolean // allow editing of track?
 }
 
 interface OuseTrack {
   track: TrackProps | null
   entity: LoopProps | null
+  trackCopy: TrackProps | null
+  entityCopy: LoopProps | null
+  setTrackCopy: ((track: Partial<TrackProps>) => void) | null
+  setEntityCopy: ((entity: Partial<LoopProps>) => void) | null
+  commitCopies: (() => void) | null
+
   player: {
     entityPlayer: Tone.Player | null
     sourceBuffer: Tone.ToneAudioBuffer | null
@@ -27,13 +34,109 @@ interface OuseTrack {
     volumeUp: () => void | null
     volumeDown: () => void | null
     toggleReverse: () => void | null
+
   }
 }
 
-const useTrack = ({id, player}: IuseTrackOptions): OuseTrack => {
 
-  const [trackLoading, setTrackLoading] = useState<boolean>(false)
-  const [entityLoading, setEntityLoading] = useState<boolean>(false)
+interface useTrackState {
+  trackLoading: boolean
+  entityLoading: boolean
+  trackLoaded: boolean
+  entityLoaded: boolean
+  trackCopy: Partial<TrackProps> | null
+  entityCopy: Partial<LoopProps> | null
+}
+
+type ReducerActions = 
+  | { type: 'loadingTrack' }
+  | { type: 'loadedTrack' }
+  | { type: 'loadingEntity' }
+  | { type: 'loadedEntity' }
+  | { type: 'initTrackCopy', track: Partial<TrackProps> }
+  | { type: 'initEntityCopy', entity: Partial<LoopProps> }
+  | { type: 'initCopies', entity: Partial<LoopProps>, track: Partial<TrackProps>} 
+  | { type: 'setTrackCopy', track: Partial<TrackProps> }
+  | { type: 'setEntityCopy', entity: Partial<LoopProps> }
+
+function useTrackReducer(state: useTrackState, action: ReducerActions) {
+  switch (action.type)  {
+    case 'loadingTrack':
+      return {
+        ...state,
+        trackLoading: true
+      }
+    case 'loadedTrack':
+      return {
+        ...state,
+        trackLoaded: true,
+        trackLoading: false
+      }
+    case 'loadingEntity':
+      return {
+        ...state,
+        entityLoading: true,
+      }
+    case 'loadedEntity':
+      return {
+        ...state,
+        entityLoaded: true,
+        entityLoading: false
+      }
+    case 'initTrackCopy':
+      return {
+        ...state,
+        trackCopy: action.track
+      }
+    case 'initEntityCopy':
+      return {
+        ...state,
+        entityCopy: action.entity
+      }
+    case 'initCopies':
+      return {
+        ...state,
+        entityCopy: action.entity,
+        trackCopy: action.track
+      }
+    case 'setTrackCopy':
+      return {
+        ...state,
+        trackCopy: {
+          ...state.trackCopy,
+          ...action.track
+        }
+      }
+    case 'setEntityCopy':
+      return {
+        ...state,
+        entityCopy: {
+          ...state.entityCopy,
+          ...action.entity
+        }
+      }
+  }
+}
+
+const defaultUseTrackState = {
+  trackLoaded: false,
+  trackLoading: false,
+  entityLoaded: false,
+  entityLoading: false,
+  trackCopy: null,
+  entityCopy: null
+}
+
+const useTrack = ({id, player, editor}: IuseTrackOptions): OuseTrack => {
+
+  const [{
+    trackLoaded,
+    trackLoading,
+    entityLoaded,
+    entityLoading,
+    trackCopy,
+    entityCopy
+  }, useTrackDispatch ] = useReducer(useTrackReducer, defaultUseTrackState)
 
   const dispatch = useDispatch();
 
@@ -77,25 +180,50 @@ const useTrack = ({id, player}: IuseTrackOptions): OuseTrack => {
     if (!track && !trackLoading) {
       // if track isn't in state, load the track from the server
       dispatch(getTrack(id))
-      setTrackLoading(true)
+      useTrackDispatch({ type: 'loadingTrack'})
     } 
     else if (track && track.entityId && !entity && !entityLoading) {
       // if the entity (Loop, for now) isn't in state, load it from the server
-      setTrackLoading(false)
+      useTrackDispatch({ type: 'loadedTrack' })
       dispatch(getLoop(track.entityId))
-      setEntityLoading(true)
+      useTrackDispatch({ type: 'loadingEntity' })
     }
   }, [track])
 
   useEffect(() => {
-    if (track && entity) {
-      setEntityLoading(false)
+    if (track && entity && entityCopy === null && trackCopy === null) {
+      useTrackDispatch({ type: 'loadedEntity' })
+      useTrackDispatch({ type: 'initCopies', entity, track })
     }
-  }, [entity])
+  }, [entity, track])
+
+
+  const commitCopies = editor ? function() {
+    if (trackCopy && entityCopy) {
+      upsertTrack(trackCopy)
+      upsertLoop(entityCopy)
+      saveTrack(trackCopy)
+      updateLoop(entityCopy)
+    }
+  } : null
+
+
+  const setTrackCopy = editor ? function(track: Partial<TrackProps>) {
+    useTrackDispatch({ type: 'setTrackCopy', track: track })
+  } : null
+
+  const setEntityCopy = editor ? function(entity: Partial<LoopProps>) {
+    useTrackDispatch({ type: 'setEntityCopy', entity: entity })
+  } : null
 
   return {
     track,
     entity,
+    trackCopy,
+    entityCopy,
+    setTrackCopy,
+    setEntityCopy,
+    commitCopies,
     player: {
       entityPlayer: entityPlayer || null,
       sourceBuffer: sourceBuffer || null,

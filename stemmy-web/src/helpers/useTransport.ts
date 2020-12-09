@@ -54,7 +54,14 @@ export default ({projectId, projectClock}: useTransportI): useTransportO => {
         setTransportSet(true)
       }
     }
-  }, [transportState, transportSet])
+
+    return () => {
+      console.log('running useTransport unmount, stopping transport and cancelling future events')
+      transport?.stop()
+      // transport?.cancel(0)
+    }
+
+  }, [transportState, transportSet, transport])
 
   // if the projectclock has changed
   useEffect(() => {

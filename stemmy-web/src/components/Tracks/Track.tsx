@@ -112,7 +112,6 @@ type TrackActions =
   | { type: 'setCurrentPlayhead', location: number }
 
 function TrackReducer(state: TrackState, action: TrackActions) {
-  console.log('track reducer called, ', action)
   switch (action.type) {
     case 'loadedPlayer': 
       return {
@@ -151,9 +150,6 @@ function TrackReducer(state: TrackState, action: TrackActions) {
 
 const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
 
-  console.log('rendering Track')
-
-
   const [{ 
     loadedPlayer, 
     loadingPlayer, 
@@ -169,21 +165,8 @@ const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
   // const dispatch = useDispatch()
 
 
-  let { entity, player } = useTrack({id: trackId, player: true})
+  let { entity, player, setTrackCopy, setEntityCopy, commitCopies } = useTrack({id: trackId, player: true, editor: true})
 
-  // // GET entityProps from Redux store (if available)
-  // const entityProps: LoopProps | null = useSelector<
-  //   RootState,
-  //   LoopProps | null
-  // >(state => {
-  //   if (entityId && state.loops.byId[entityId]) {
-  //     return state.loops.byId[entityId]
-  //   } else {
-  //     return {}
-  //   }
-  // })
-
-  //  get sourceNode state from useSourceNode hook (mostly null on first render)
   const {
     entityPlayer,
     sourceBuffer,
@@ -202,16 +185,6 @@ const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
     }
   }, [entityPlayer])
 
-  // // FIRST: if unavailable, get entityProps for the track's associated entity
-  // useEffect(() => {
-  //   if (entityId && !entityProps) {
-  //     dispatch(getLoop({ id: entityId }))
-  //   }
-  // }, [])
-
-  console.log('loaded track player :', loadedPlayer)
-  console.log('loading track player :', loadingPlayer)
-
   useEffect(() => {
     console.log('running track useeffect');
     if (entity && !entityPlayer && !loadingPlayer) {
@@ -220,38 +193,6 @@ const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
       localDispatch({type: 'loadedPlayer'})
     }
   }, [entityPlayer, loadedPlayer, loadingPlayer])
-
-  // // 2nd (WHEN entityProps are loaded): set entityPlayer properties to match
-  // useEffect(() => {
-  //   if (entityProps && !entityPlayer && !loadingPlayer) {
-  //     // console.log('loading track player')
-  //     // setLoadingPlayer(true)
-  //     // Axios.get<ArrayBuffer>(`${REST_URI}/loops/audio/${entityId}`, {
-  //     //   responseType: 'arraybuffer',
-  //     // }).then(res => {
-  //     //   console.log(res)
-  //     //   setArrayBuffer(res.data)
-  //     //   console.log('setting array buffer: ', res.data)
-  //     //   setLoadingAudio(false)
-  //     // })
-  //   }
-
-  //   return () => {}
-  // }, [entityProps])
-
-  // 3rd (WHEN sourceNode is ready and getPlaybackTime is available): setTimeout to update playhead position at a regular interval
-  // useEffect(() => {
-  //     // let timeCron = setTimeout(() => {
-  //     //   if (getPlaybackLocation) {
-  //     //     localDispatch({ type: 'setCurrentPlayhead', location: getPlaybackLocation() || 0 })
-  //     //   }
-  //     // }, 16);
-  
-  //     // return(() => {
-  //     //   clearTimeout(timeCron);
-  //     // })
-  
-  // }, [getPlaybackLocation])
   
   // WHEN TrackImageContainer Ref is available: allow mousewheel to operate on this element without scrolling page
   useEffect(() => {
@@ -273,19 +214,7 @@ const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
   }, [ref])
 
   // // HELPER FUNCTIONS
-  // // toggle playback
-  // function togglePlay() {
-  //   if (entityPlayer) {
-  //     if (!playing) {
-  //       startPlaybackNow()
-  //       localDispatch({ type: 'setPlaying' })
-  //     } else {
-  //       stopPlaybackNow()
-  //       localDispatch({ type: 'unsetPlaying' })
-  //       localDispatch({ type: 'setCurrentPlayhead', location: 0})
-  //     }
-  //   }
-  // }
+  // 
   // handle mousewheel input as gain control
   function handleGainScroll(e: React.WheelEvent<HTMLDivElement>) {
     if (entityPlayer) {

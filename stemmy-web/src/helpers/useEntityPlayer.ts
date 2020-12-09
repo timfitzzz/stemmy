@@ -133,6 +133,8 @@ export const useEntityPlayer = (
             console.log(unschedulingCb)
             setReadyToPlay(true)
             debugOn && console.log('--- player ready for transport.start()')
+          } else {
+            debugOn && console.log('component is still marked readytoplay')
           }
 
         }
@@ -146,9 +148,11 @@ export const useEntityPlayer = (
       console.log('running useEntityPlayer useEffect return on unmount for ', entityId)
       console.log(unschedulingCb)
       if (unschedulingCb) {
+        entityPlayer?.stop()
         console.log('running unscheduling cb')
         unschedulingCb()
         setReadyToPlay(false)
+        setUnschedulingCb(null)
       }
     }
   }, [entityId, entityUrl, entityPlayer, sourceBuffer, readyToPlay, unschedulingCb])

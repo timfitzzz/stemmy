@@ -41,8 +41,27 @@ type ReducerActions =
   | {type: 'setError', err: string}
   | {type: 'setCopy', project: ProjectProps}
 
-
-
+function useProjectReducer(state: useProjectState, action: ReducerActions) {
+  switch (action.type) {
+    case 'setProjectId':
+      return {
+        ...state,
+        projectId: action.id
+      }
+    case 'setError':
+      return {
+        ...state,
+        error: action.err
+      }
+    case 'setCopy':
+      return {
+        ...state,
+        copy: action.project
+      }
+    default:
+      return state
+  }
+}
 
 
 export const useProject = ({id, props}: IgetProjectOptions = {}) => {
@@ -57,27 +76,7 @@ export const useProject = ({id, props}: IgetProjectOptions = {}) => {
 
   const dispatch = useDispatch()
 
-  function useProjectReducer(state: useProjectState, action: ReducerActions) {
-    switch (action.type) {
-      case 'setProjectId':
-        return {
-          ...state,
-          projectId: action.id
-        }
-      case 'setError':
-        return {
-          ...state,
-          error: action.err
-        }
-      case 'setCopy':
-        return {
-          ...state,
-          copy: action.project
-        }
-      default:
-        return state
-    }
-  }
+
 
   const [{
     projectId,
@@ -216,7 +215,7 @@ export const useProject = ({id, props}: IgetProjectOptions = {}) => {
 
   function saveProject () {
     if (project) {
-      dispatch(saveProjectToServer(project))
+      dispatch(saveProjectToServer(copy || project))
     }
   }
   
