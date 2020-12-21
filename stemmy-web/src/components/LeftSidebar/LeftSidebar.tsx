@@ -25,7 +25,7 @@ const Wrapper = styled.div`
 export default ({ title, subtitle, userName, menuItems }: LeftSidebarProps) => {
   return (
     <Wrapper>
-      <Heading title={title} subtitle={subtitle} link={'https://localhost:8000'}/>
+      <Heading title={title} subtitle={subtitle} link={'/'} />
       {userName || 'testUserName'}
       {menuItems}
     </Wrapper>

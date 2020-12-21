@@ -1,4 +1,11 @@
-import React, { MouseEvent, UIEvent, useEffect, useReducer, useRef, useState } from 'react'
+import React, {
+  MouseEvent,
+  UIEvent,
+  useEffect,
+  useReducer,
+  useRef,
+  useState,
+} from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../../store'
 import styled from 'styled-components'
@@ -6,10 +13,10 @@ import { LoopProps, TrackProps } from '../../types'
 
 import { useEntityPlayer } from '../../helpers/useEntityPlayer'
 import { getLoop } from '../../store/loops/actions'
-import { getLoopAudioUrlById } from '../../rest';
+import { getLoopAudioUrlById } from '../../rest'
 
 import Axios, { AxiosResponse } from 'axios'
-import TrackImageKonva from './TrackImageKonva'
+import TrackDisplay from './TrackDisplay'
 import { Player } from 'tone'
 import useTrack from '../../helpers/useTrack'
 
@@ -92,7 +99,7 @@ const defaultTrackState = {
   loadingPlayer: false,
   playing: false,
   currentVolume: 0,
-  currentPlayhead: 0
+  currentPlayhead: 0,
 }
 
 interface TrackState {
@@ -103,81 +110,79 @@ interface TrackState {
   currentPlayhead: number
 }
 
-type TrackActions = 
+type TrackActions =
   | { type: 'loadedPlayer' }
   | { type: 'loadingPlayer' }
   | { type: 'setPlaying' }
   | { type: 'unsetPlaying' }
-  | { type: 'setCurrentVolume', volume: number }
-  | { type: 'setCurrentPlayhead', location: number }
+  | { type: 'setCurrentVolume'; volume: number }
+  | { type: 'setCurrentPlayhead'; location: number }
 
 function TrackReducer(state: TrackState, action: TrackActions) {
   switch (action.type) {
-    case 'loadedPlayer': 
+    case 'loadedPlayer':
       return {
         ...state,
         loadedPlayer: true,
-        loadingPlayer: false
+        loadingPlayer: false,
       }
     case 'loadingPlayer':
       return {
         ...state,
         loadingPlayer: true,
-        loadedPlayer: false
+        loadedPlayer: false,
       }
     case 'setPlaying':
       return {
         ...state,
-        playing: true
+        playing: true,
       }
     case 'unsetPlaying':
       return {
         ...state,
-        playing: false
+        playing: false,
       }
     case 'setCurrentVolume':
       return {
         ...state,
-        currentVolume: action.volume
+        currentVolume: action.volume,
       }
     case 'setCurrentPlayhead':
       return {
         ...state,
-        currentPlayhead: action.location
+        currentPlayhead: action.location,
       }
   }
 }
 
-const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
+const Track = ({ trackId, editing, perRow, asPlayer = false }: ITrackProps) => {
+  // component state
+  const [
+    { loadedPlayer, loadingPlayer, playing, currentVolume, currentPlayhead },
+    localDispatch,
+  ] = useReducer(TrackReducer, defaultTrackState)
 
-  const [{ 
-    loadedPlayer, 
-    loadingPlayer, 
-    playing, 
-    currentVolume, 
-    currentPlayhead
-  }, localDispatch ] = useReducer(TrackReducer, defaultTrackState)
-
-  // entityPlayer state -- will be loaded in useEffect below
-  // let [entityPlayer, setEntityPlayer] = useState<Player | null>(null)
   let ref = useRef<HTMLDivElement>(null)
 
-  // const dispatch = useDispatch()
-
-
-  let { entity, player, setTrackCopy, setEntityCopy, commitCopies } = useTrack({id: trackId, player: true, editor: true})
-
-  const {
-    entityPlayer,
-    sourceBuffer,
-    getPlaybackLocation,
-    getPlaybackTime,
-    getVolume,
-    getGain,
-    toggleReverse,
-    volumeUp,
-    volumeDown,
-  } = player
+  let {
+    track,
+    entity,
+    player: {
+      entityPlayer,
+      sourceBuffer,
+      getPlaybackLocation,
+      getPlaybackTime,
+      getVolume,
+      getGain,
+      toggleReverse,
+      volumeUp,
+      volumeDown,
+    },
+    setTrackCopy,
+    setEntityCopy,
+    commitCopies,
+    getSegments,
+  } = useTrack({ id: trackId, player: true, editor: editing })
 
   useEffect(() => {
     if (entityPlayer && !loadedPlayer) {
@@ -186,14 +191,13 @@ const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
   }, [entityPlayer])
 
   useEffect(() => {
-    console.log('running track useeffect');
     if (entity && !entityPlayer && !loadingPlayer) {
-      localDispatch({type: 'loadingPlayer'})
+      localDispatch({ type: 'loadingPlayer' })
     } else if (entity && entityPlayer && loadingPlayer) {
-      localDispatch({type: 'loadedPlayer'})
+      localDispatch({ type: 'loadedPlayer' })
     }
   }, [entityPlayer, loadedPlayer, loadingPlayer])
-  
+
   // WHEN TrackImageContainer Ref is available: allow mousewheel to operate on this element without scrolling page
   useEffect(() => {
     function preventWheelDefault(this: HTMLDivElement, e: WheelEvent) {
@@ -214,7 +218,7 @@ const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
   }, [ref])
 
   // // HELPER FUNCTIONS
-  // 
+  //
   // handle mousewheel input as gain control
   function handleGainScroll(e: React.WheelEvent<HTMLDivElement>) {
     if (entityPlayer) {
@@ -228,13 +232,24 @@ const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
     }
   }
 
+  /* need to implement the following properties:
+    pan: number
+    playing: boolean (interpret as 'muted')
+    reverse: boolean
+    scale: number
+    synchronize: boolean
+    volume: number
+  */
+
   return (
     <TrackWrapper perRow={3}>
-     <TrackImageContainer onWheel={handleGainScroll}> 
-        { entityPlayer && entityPlayer.loaded && sourceBuffer &&
-          <TrackImageKonva ref={ref} 
-            audioBuffer={sourceBuffer}
-            entityPlayer={entityPlayer}
+      <TrackImageContainer onWheel={handleGainScroll} ref={ref}>
+        {entityPlayer && entityPlayer.loaded && sourceBuffer && (
+          <TrackDisplay
+            getSegments={getSegments || null}
+            loaded={entityPlayer.loaded}
+            duration={sourceBuffer.duration}
+            reverse={entityPlayer.reverse}
             currentPlayhead={currentPlayhead}
             width={90}
             height={90}
@@ -242,9 +257,9 @@ const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
             outerMargin={2}
             innerMargin={15}
             toggleReverse={toggleReverse}
-            key={'trackImage'+trackId}
+            key={'trackImage' + trackId}
           />
-        }
+        )}
         {/* {playing ? (
           <TrackPauseButton onClick={togglePlay} />
         ) : (
@@ -255,6 +270,6 @@ const Track = ({ trackId, editing, perRow, asPlayer = false}: ITrackProps) => {
   )
 }
 
-Track.whyDidYouRender = true;
+Track.whyDidYouRender = true
 
 export { Track }

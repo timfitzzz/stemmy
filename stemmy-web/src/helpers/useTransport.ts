@@ -1,5 +1,5 @@
 import * as Tone from 'tone'
-import { useContext, Context, useEffect, useState } from 'react'
+import { useContext, Context, useEffect, useState, useMemo } from 'react'
 import { ProjectClockSettings } from '../types'
 import ContextForAudio, { OAudioEngine } from './audioContext';
 import { useContextSelector } from 'react-use-context-selector';
@@ -14,6 +14,7 @@ interface useTransportO {
   transportSet: boolean
   unsetTransport: () => void
   isPlaying: () => boolean
+  state: string | null
   start: () => void
   stop: () => void
 }
@@ -48,7 +49,6 @@ export default ({projectId, projectClock}: useTransportI): useTransportO => {
       if (transport && !transportSet && isCurrent && projectClock && !clockMatchesTransport()) { 
         transport.bpm.value = projectClock.BPM || 60
         transport.timeSignature = projectClock.beatsPerBar || 4
-        debugger;
         setTransportSet(true)
       } else {
         setTransportSet(true)
@@ -80,16 +80,17 @@ export default ({projectId, projectClock}: useTransportI): useTransportO => {
     }
   }
 
-  const isPlaying = (): boolean => (transport && transport.state === 'started' ? true : false)
+  const isPlaying = useMemo(() => (): boolean => (transport && transport.state === 'started' ? true : false),[])
 
-  const start = (): void => { transport?.start() }
+  const start = useMemo(() => (): void => { transport?.start() },[])
 
-  const stop = (): void => { transport?.stop() }
+  const stop = useMemo(() => (): void => { transport?.stop() },[])
 
   return {
     start,
     stop,
     isPlaying,
+    state: transport ? transport.state : null,
     transportSet,
     unsetTransport
   }

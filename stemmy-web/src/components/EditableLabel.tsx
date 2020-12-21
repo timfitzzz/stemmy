@@ -6,7 +6,7 @@ interface IEditableLabel {
   textLabel?: string
   type: string
   value: string | number | undefined
-  setValue: (value: any) => void
+  setValue: ((value: any) => void) | null
   children?: ReactElement[]
   valueContainer: React.ElementType
   inputContainer: React.ElementType
@@ -40,8 +40,10 @@ export default ({
   const inputNode = useRef<HTMLDivElement>(null)
 
   function handleInClick(e: React.MouseEvent<HTMLDivElement, MouseEvent>): any {
-    setEditing(true)
-    const listener = document.addEventListener('mousedown', handleOutClick)
+    if (setValue) {
+      setEditing(true)
+      const listener = document.addEventListener('mousedown', handleOutClick)
+    }
   }
 
   function handleOutClick(this: any, e: MouseEvent): any {
@@ -67,7 +69,9 @@ export default ({
 
   function handleInputChange(e: KeyboardEvent): void {
     let target = e.target as HTMLInputElement
-    setValue(target?.value)
+    if (setValue) { 
+      setValue(target?.value) 
+    }
   }
 
   function handleEnterKey(e: KeyboardEvent): void {

@@ -68,6 +68,11 @@ const TopMenuPanel = styled.div`
 `
 
 const ProjectEditorContainer = styled.div`
+  width: 300px;
+
+  @media (min-width: 650px) {
+    margin-left: ${p => p.theme.spacing.unit}px;
+  }
 `
 
 interface IVerticalMenuItem {

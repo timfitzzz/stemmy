@@ -7,7 +7,9 @@ import {
   saveProjectToServer,
   upsertProject,
 } from '../store/projects/actions'
+import { IProjectStore } from '../store/projects/types'
 import { ProjectProps } from '../types'
+import { createSelector } from 'reselect'
 
 // Project view components use this to initialize
 // and obtain project-related getters and setters.
@@ -34,35 +36,61 @@ export const useProjects = ({ids, type, props}: IgetProjectsOptions = {}): OgetP
   let dispatch = useDispatch()
   let [refreshed, setRefreshed] = useState(false)
 
-  let projects = useSelector<RootState, Partial<ProjectProps>[] | null>(state => {
-    let output: Partial<ProjectProps>[] = []
-    
-    // if projectIds were provided, set them as output
-    if (ids) {
-      output = ids.map( id => state.projects.byId[id])
-    } else if (type) {
-      if (type === 'drafts') {
-        output = state.projects.drafts.map(id => state.projects.byId[id])
-      } else if (type === 'published') {
-        return null // TODO: add this as a status
+  let selectorProps = [];
+
+  let typeIds = useSelector<RootState, string[] | null>(
+    state => {
+      switch (type) {
+        case 'drafts':
+          return state.projects.drafts
+        default:
+          return null
       }
     }
+  )
 
-    if (props && props.length > 0) {
-      output = output.map(project => {
-        let validProps = props.filter(prop => project[prop])
-        if (validProps.length > 0) {
-          return Object.assign({}, ...validProps.map(prop => ({
-            [prop]: project[prop]
-          })))
-        } else {
-          return null
-        }
-      })
+  if (typeIds && typeIds.length > 0) {
+    if (!ids) {
+      ids = typeIds
     }
+    else {
+      ids = typeIds.filter(typeId => ids!.indexOf(typeId) !== -1)
+    }
+  }
 
-    return output
-  }, shallowEqual)
+  let byIdSelector = (state: RootState) => state.projects.byId
+  let projectsSelector = createSelector(byIdSelector, (byId: IProjectStore['byId']): Partial<ProjectProps>[] | null => ids ? ids.map(id => byId[id]) : null)
+  let projects = useSelector<RootState, Partial<ProjectProps>[] | null>(projectsSelector)
+
+  // let projects = useSelector<RootState, Partial<ProjectProps>[] | null>(state => {
+  //   let output: Partial<ProjectProps>[] = []
+    
+  //   // if projectIds were provided, set them as output
+  //   if (ids) {
+  //     output = ids.map( id => state.projects.byId[id])
+  //   } else if (type) {
+  //     if (type === 'drafts') {
+  //       output = state.projects.drafts.map(id => state.projects.byId[id])
+  //     } else if (type === 'published') {
+  //       return null // TODO: add this as a status
+  //     }
+  //   }
+
+  //   if (props && props.length > 0) {
+  //     output = output.map(project => {
+  //       let validProps = props.filter(prop => project[prop])
+  //       if (validProps.length > 0) {
+  //         return Object.assign({}, ...validProps.map(prop => ({
+  //           [prop]: project[prop]
+  //         })))
+  //       } else {
+  //         return null
+  //       }
+  //     })
+  //   }
+
+  //   return output
+  // }, shallowEqual)
 
   function getDraftIds(): string[] {
     // get list of drafts from redux

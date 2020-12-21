@@ -28,19 +28,27 @@ export function tracksReducer(
     case TrackActions.GET_TRACK:
       return {
         ...state,
-        loadingIds: [...state.loadingIds, action.payload]
+        loadingIds: [...state.loadingIds, action.payload],
       }
     case TrackActions.GET_TRACK_SUCCESS:
       return {
         ...state,
-        byId: { ...state.byId, [action.payload.id!]: action.payload},
-        loadingIds: [...state.loadingIds.filter(id => id != action.payload.id)]
+        byId: { ...state.byId, [action.payload.id!]: action.payload },
+        loadingIds: [...state.loadingIds.filter(id => id != action.payload.id)],
       }
     case TrackActions.GET_TRACK_FAIL:
       return {
         ...state,
-        loadingIds: [...state.loadingIds.filter(id => id != action.payload.trackId)],
-        errors: [{ id: action.payload.trackId, message: action.payload.err.toString()}, ...state.errors]
+        loadingIds: [
+          ...state.loadingIds.filter(id => id != action.payload.trackId),
+        ],
+        errors: [
+          {
+            id: action.payload.trackId,
+            message: action.payload.err.toString(),
+          },
+          ...state.errors,
+        ],
       }
     case TrackActions.SAVE_TRACK:
       if (state.saving.indexOf(action.payload) > -1) {
@@ -52,9 +60,13 @@ export function tracksReducer(
       return {
         ...state,
         saving: getNewSavingWithoutTrack(action.payload[0]),
-        errors: [{ 
-          id: action.payload[0].id, message: action.payload[1].toString()
-        }, ...state.errors],
+        errors: [
+          {
+            id: action.payload[0].id,
+            message: action.payload[1].toString(),
+          },
+          ...state.errors,
+        ],
       }
     case TrackActions.SAVE_TRACK_SUCCESS:
       return {
@@ -83,10 +95,13 @@ export function tracksReducer(
       return {
         ...state,
         saving: getNewSavingWithoutTrack(action.payload[0]),
-        errors: [{
-          id: action.payload[0].id || 'none',
-          message: action.payload[1].toString()
-        }, ...state.errors],
+        errors: [
+          {
+            id: action.payload[0].id || 'none',
+            message: action.payload[1].toString(),
+          },
+          ...state.errors,
+        ],
       }
     default:
       return state

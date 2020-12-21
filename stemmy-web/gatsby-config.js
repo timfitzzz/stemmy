@@ -44,14 +44,14 @@ module.exports = {
         include_favicon: true, // Include favicon
       },
     },
-    // {
-    //   resolve: 'gatsby-plugin-why-did-you-render-redux',
-    //   options: {
-    //     trackAllPureComponents: true,
-    //     trackHooks: true,
-    //     trackUseSelector: true,
-    //   },
-    // },
+    {
+      resolve: 'gatsby-plugin-why-did-you-render-redux',
+      options: {
+        trackAllPureComponents: true,
+        trackHooks: true,
+        trackUseSelector: true,
+      },
+    },
     `gatsby-plugin-sitemap`,
     `gatsby-plugin-typescript`,
     `gatsby-plugin-styled-components`,

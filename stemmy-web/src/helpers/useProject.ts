@@ -1,19 +1,30 @@
-import { Reducer, ReducerAction, useContext, useEffect, useReducer, useState } from 'react'
+import {
+  Reducer,
+  ReducerAction,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+  useState,
+} from 'react'
 import { shallowEqual, useDispatch, useSelector } from 'react-redux'
 import { RootState } from '../store'
 import verbalId from 'verbal-id'
 
-import { AudioEntitySources, audioEntityTypes, ProjectProps } from "../types";
-import { createNewProject, saveProjectToServer, upsertProject } from '../store/projects/actions';
-import { clearCreatingProjectId } from '../store/projects/actions';
-import { getProject } from '../store/projects/actions';
-import { ProjectIOError } from '../store/projects/types';
-import { addTrackAndEntityFromAudioFile } from '../store/crossoverActions';
-import { AudioFileData } from '../rest';
+import { AudioEntitySources, audioEntityTypes, ProjectProps } from '../types'
+import {
+  createNewProject,
+  saveProjectToServer,
+  upsertProject,
+} from '../store/projects/actions'
+import { clearCreatingProjectId } from '../store/projects/actions'
+import { getProject } from '../store/projects/actions'
+import { ProjectIOError } from '../store/projects/types'
+import { addTrackAndEntityFromAudioFile } from '../store/crossoverActions'
+import { AudioFileData } from '../rest'
 
 interface IgetProjectOptions {
   id?: string
-  props?: (keyof ProjectProps)[]
 }
 
 interface OgetProject {
@@ -29,43 +40,40 @@ interface OgetProject {
   getClockSetter: <T>(prop: string) => (value: T) => void
 }
 
-
 interface useProjectState {
   projectId: string | null
   error: string | null
   copy: Partial<ProjectProps> | null
 }
 
-type ReducerActions = 
-  | {type: 'setProjectId', id: string }
-  | {type: 'setError', err: string}
-  | {type: 'setCopy', project: ProjectProps}
+type ReducerActions =
+  | { type: 'setProjectId'; id: string }
+  | { type: 'setError'; err: string }
+  | { type: 'setCopy'; project: ProjectProps }
 
 function useProjectReducer(state: useProjectState, action: ReducerActions) {
   switch (action.type) {
     case 'setProjectId':
       return {
         ...state,
-        projectId: action.id
+        projectId: action.id,
       }
     case 'setError':
       return {
         ...state,
-        error: action.err
+        error: action.err,
       }
     case 'setCopy':
       return {
         ...state,
-        copy: action.project
+        copy: action.project,
       }
     default:
       return state
   }
 }
 
-
-export const useProject = ({id, props}: IgetProjectOptions = {}) => {
-
+export const useProject = ({ id }: IgetProjectOptions = {}) => {
   // useProject interface:
   // - if a blank object is passed, a new project will be created, stored as a draft, and
   //   returned.
@@ -76,22 +84,19 @@ export const useProject = ({id, props}: IgetProjectOptions = {}) => {
 
   const dispatch = useDispatch()
 
-
-
-  const [{
-    projectId,
-    error,
-    copy
-  }, localDispatch] = useReducer(useProjectReducer, {
-    projectId: id || null,
-    error: null,
-    copy: null
-  })
+  const [{ projectId, error, copy }, localDispatch] = useReducer(
+    useProjectReducer,
+    {
+      projectId: id || null,
+      error: null,
+      copy: null,
+    }
+  )
 
   const project: Partial<ProjectProps> | null = useSelector<
     RootState,
     ProjectProps | null
-  >(state => projectId ? state.projects.byId[projectId] : null)
+  >(state => (projectId ? state.projects.byId[projectId] : null))
 
   //   // if a a projectId is set and it exists in state,
   //   // we'll return it.
@@ -130,11 +135,10 @@ export const useProject = ({id, props}: IgetProjectOptions = {}) => {
   // capture it and return it
   const fetchError: ProjectIOError | null = useSelector<
     RootState,
-    ProjectIOError | null 
+    ProjectIOError | null
   >(state => {
-    if (state.projects.errors[0]
-        && state.projects.errors[0].id === projectId) {
-          return state.projects.errors[0]
+    if (state.projects.errors[0] && state.projects.errors[0].id === projectId) {
+      return state.projects.errors[0]
     } else {
       return null
     }
@@ -144,7 +148,9 @@ export const useProject = ({id, props}: IgetProjectOptions = {}) => {
     if (project) {
       if (
         state.projects.saving.length > 0 &&
-        state.projects.saving.findIndex((value: ProjectProps) => value === project) !== -1
+        state.projects.saving.findIndex(
+          (value: ProjectProps) => value === project
+        ) !== -1
       ) {
         return true
       } else {
@@ -195,38 +201,38 @@ export const useProject = ({id, props}: IgetProjectOptions = {}) => {
   // if an error is thrown, capture it for return
   useEffect(() => {
     if (fetchError) {
-      localDispatch({type: 'setError', err: fetchError.message})
+      localDispatch({ type: 'setError', err: fetchError.message })
     }
   }, [fetchError])
 
   // if the passed-in project id changes, change project id
   useEffect(() => {
     if (id && id != projectId) {
-      localDispatch({type: 'setProjectId', id })
+      localDispatch({ type: 'setProjectId', id })
     }
-  },[id])
+  }, [id])
 
   // if the retrieved project's id changes, reset copy (for now)
   useEffect(() => {
     if (copy && project && copy.id !== project.id) {
-      localDispatch({ type: 'setCopy', project: {...project}})
+      localDispatch({ type: 'setCopy', project: { ...project } })
     }
   })
 
-  function saveProject () {
+  function saveProject() {
     if (project) {
       dispatch(saveProjectToServer(copy || project))
     }
   }
-  
+
   function updateProject(project: ProjectProps) {
     dispatch(upsertProject(project))
   }
 
-  function addTrackFromFile (fileData: AudioFileData) {
+  function addTrackFromFile(fileData: AudioFileData) {
     if (projectId) {
       dispatch(
-        addTrackAndEntityFromAudioFile (
+        addTrackAndEntityFromAudioFile(
           fileData,
           projectId,
           audioEntityTypes.Loop,
@@ -238,7 +244,7 @@ export const useProject = ({id, props}: IgetProjectOptions = {}) => {
 
   function initCopy() {
     if (!copy && project) {
-      localDispatch({ type: 'setCopy', project: {...project}})
+      localDispatch({ type: 'setCopy', project: { ...project } })
     }
   }
 
@@ -249,32 +255,38 @@ export const useProject = ({id, props}: IgetProjectOptions = {}) => {
     }
   }
 
-  function getSetter<T>(prop: string) {
-    initCopy()
-    return (value: T) => {
-      if (project && copy) {
-        localDispatch({ 
-          type: 'setCopy', 
-          project: { ...copy, [prop]: value }
-        })
+  const getSetter = useMemo(
+    () => <T>(prop: string) => {
+      initCopy()
+      return (value: T) => {
+        if (project && copy) {
+          localDispatch({
+            type: 'setCopy',
+            project: { ...copy, [prop]: value },
+          })
+        }
       }
-    }
-  }
+    },
+    [project, copy]
+  )
 
-  function getClockSetter<T>(prop: string) {
-    initCopy()
-    return (value: T) => {
-      if (project && copy) {
-        localDispatch({
-          type: 'setCopy',
-          project: {
-            ...copy,
-            clock: { ...copy.clock, [prop]: value }
-          },
-        })
+  const getClockSetter = useMemo(
+    () => <T>(prop: string) => {
+      initCopy()
+      return (value: T) => {
+        if (project && copy) {
+          localDispatch({
+            type: 'setCopy',
+            project: {
+              ...copy,
+              clock: { ...copy.clock, [prop]: value },
+            },
+          })
+        }
       }
-    }
-  }
+    },
+    [project, copy]
+  )
 
   // finally, return the project and/or error.
   return {
@@ -287,6 +299,6 @@ export const useProject = ({id, props}: IgetProjectOptions = {}) => {
     // upsertProject,
     addTrackFromFile,
     getSetter,
-    getClockSetter
+    getClockSetter,
   }
 }
