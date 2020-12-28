@@ -78,7 +78,10 @@ export default ({ location }: IndexPageProps) => {
       <Wrapper>
         {currentPageIds &&
           currentPageIds.map((projectId: string) => (
-            <ProjectPlayer {...projects[projectId]} />
+            <ProjectPlayer
+              {...projects[projectId]}
+              key={'projectplayer' + projectId}
+            />
           ))}
       </Wrapper>
     </Layout>

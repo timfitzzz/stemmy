@@ -10,12 +10,16 @@ export enum TrackActions {
   CREATE_NEW_TRACK_FAIL = 'CREATE_NEW_TRACK_FAIL',
   GET_TRACK = 'GET_TRACK',
   GET_TRACK_SUCCESS = 'GET_TRACK_SUCCESS',
-  GET_TRACK_FAIL = 'GET_TRACK_FAIL'
+  GET_TRACK_FAIL = 'GET_TRACK_FAIL',
+  MODIFY_TRACK_PLAYER = 'MODIFY_TRACK_PLAYER',
+  MODIFY_TRACK_EDITOR = 'MODIFY_TRACK_EDITOR',
+  RESET_TRACK_PLAYER = 'RESET_TRACK_PLAYER',
 }
 
 export type TrackIOError = {
   id?: string
   message: string
+  timestamp: Date
 }
 
 export interface ITrackStore {
@@ -25,6 +29,33 @@ export interface ITrackStore {
     [key: string]: TrackProps
   }
   loadingIds: string[]
+  playerChanges: {
+    [key: string]: Partial<TrackProps>
+  }
+  unsavedEditorChanges: {
+    [key: string]: Partial<TrackProps>
+  }
+}
+
+export interface ModifyTrackPlayerAction {
+  type: TrackActions.MODIFY_TRACK_PLAYER
+  payload: {
+    id: string
+    changes: Partial<TrackProps>
+  }
+}
+
+export interface ResetTrackPlayerAction {
+  type: TrackActions.RESET_TRACK_PLAYER
+  payload: { id: string }
+}
+
+export interface ModifyTrackEditorAction {
+  type: TrackActions.MODIFY_TRACK_EDITOR
+  payload: {
+    id: string
+    changes: Partial<TrackProps>
+  }
 }
 
 export interface UpsertTrackAction {
@@ -45,7 +76,7 @@ export interface GetTrackSuccessAction {
 export interface GetTrackFailAction {
   type: TrackActions.GET_TRACK_FAIL
   payload: {
-    trackId: string,
+    trackId: string
     err: Error
   }
 }
@@ -101,3 +132,6 @@ export type TrackActionTypes =
   | GetTrackAction
   | GetTrackSuccessAction
   | GetTrackFailAction
+  | ModifyTrackEditorAction
+  | ModifyTrackPlayerAction
+  | ResetTrackPlayerAction

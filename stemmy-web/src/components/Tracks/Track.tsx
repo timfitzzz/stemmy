@@ -2,6 +2,7 @@ import React, {
   MouseEvent,
   UIEvent,
   useEffect,
+  useMemo,
   useReducer,
   useRef,
   useState,
@@ -19,6 +20,7 @@ import Axios, { AxiosResponse } from 'axios'
 import TrackDisplay from './TrackDisplay'
 import { Player } from 'tone'
 import useTrack from '../../helpers/useTrack'
+import { IuseTracksAudioModes, useTracks, useTracksAudio } from '../../hooks'
 
 export const REST_URI = process.env.GATSBY_REST_URI
 
@@ -165,27 +167,53 @@ const Track = ({ trackId, editing, perRow, asPlayer = false }: ITrackProps) => {
   let ref = useRef<HTMLDivElement>(null)
 
   let {
-    track,
-    entity,
-    player: {
-      entityPlayer,
-      sourceBuffer,
-      getPlaybackLocation,
-      getPlaybackTime,
-      getVolume,
-      getGain,
-      toggleReverse,
-      volumeUp,
-      volumeDown,
-    },
-    setTrackCopy,
-    setEntityCopy,
-    commitCopies,
+    tracks,
+    entities,
+    sourceBuffers,
+    entityPlayers,
     getSegments,
-  } = useTrack({ id: trackId, player: true, editor: editing })
+    volumeUp,
+    volumeDown,
+    getVolume,
+    getGain,
+    fullyLoaded,
+  } = useTracksAudio({
+    ids: [trackId],
+    modules: [IuseTracksAudioModes.player],
+    setPlayback: false,
+  })
+
+  let track = useMemo(
+    () =>
+      tracks && tracks.length > 0
+        ? tracks.filter(t => t.id === trackId)[0]
+        : null,
+    [tracks]
+  )
+
+  let entity = useMemo(
+    () =>
+      track && track.id && entities && entities.length > 0
+        ? entities.filter(e => e.id === track!.entityId)[0]
+        : null,
+    [entities, track]
+  )
+
+  let sourceBuffer = useMemo(
+    () =>
+      sourceBuffers && entity && entity.id ? sourceBuffers[entity.id] : null,
+    [sourceBuffers]
+  )
+
+  let entityPlayer = useMemo(
+    () =>
+      entityPlayers && entity && entity.id ? entityPlayers[entity.id] : null,
+    [entityPlayers]
+  )
 
   useEffect(() => {
     if (entityPlayer && !loadedPlayer) {
+      console.log('setting player loaded')
       localDispatch({ type: 'loadedPlayer' })
     }
   }, [entityPlayer])
@@ -193,10 +221,8 @@ const Track = ({ trackId, editing, perRow, asPlayer = false }: ITrackProps) => {
   useEffect(() => {
     if (entity && !entityPlayer && !loadingPlayer) {
       localDispatch({ type: 'loadingPlayer' })
-    } else if (entity && entityPlayer && loadingPlayer) {
-      localDispatch({ type: 'loadedPlayer' })
     }
-  }, [entityPlayer, loadedPlayer, loadingPlayer])
+  }, [entity, entityPlayer])
 
   // WHEN TrackImageContainer Ref is available: allow mousewheel to operate on this element without scrolling page
   useEffect(() => {
@@ -221,13 +247,19 @@ const Track = ({ trackId, editing, perRow, asPlayer = false }: ITrackProps) => {
   //
   // handle mousewheel input as gain control
   function handleGainScroll(e: React.WheelEvent<HTMLDivElement>) {
-    if (entityPlayer) {
+    if (entity && entity.id && entityPlayer && fullyLoaded) {
       if (e.deltaY > 0) {
-        volumeDown()
-        localDispatch({ type: 'setCurrentVolume', volume: getVolume() || 0 })
+        volumeDown(entity.id)
+        localDispatch({
+          type: 'setCurrentVolume',
+          volume: getVolume(entity.id) || 0,
+        })
       } else if (e.deltaY < 0) {
-        volumeUp()
-        localDispatch({ type: 'setCurrentVolume', volume: getVolume() || 0 })
+        volumeUp(entity.id)
+        localDispatch({
+          type: 'setCurrentVolume',
+          volume: getVolume(entity.id) || 0,
+        })
       }
     }
   }
@@ -244,7 +276,7 @@ const Track = ({ trackId, editing, perRow, asPlayer = false }: ITrackProps) => {
   return (
     <TrackWrapper perRow={3}>
       <TrackImageContainer onWheel={handleGainScroll} ref={ref}>
-        {entityPlayer && entityPlayer.loaded && sourceBuffer && (
+        {entityPlayer && entityPlayer.loaded && sourceBuffer && fullyLoaded && (
           <TrackDisplay
             getSegments={getSegments || null}
             loaded={entityPlayer.loaded}
@@ -253,10 +285,11 @@ const Track = ({ trackId, editing, perRow, asPlayer = false }: ITrackProps) => {
             currentPlayhead={currentPlayhead}
             width={90}
             height={90}
-            volume={getGain() || 0}
+            volume={entity && entity.id ? getGain(entity.id) : 0}
             outerMargin={2}
             innerMargin={15}
-            toggleReverse={toggleReverse}
+            toggleReverse={() => {}}
+            // toggleReverse={toggleReverse}
             key={'trackImage' + trackId}
           />
         )}

@@ -22,9 +22,10 @@ import { TrackControls } from './TrackControls'
 import { TrackWaveform } from './TrackWaveform'
 import { TrackImageBackground } from './TrackImageBackground'
 import { getCirclePoint } from '.'
+import { useCircleGeometry, OuseCircleGeometry } from '../../../hooks'
 
 interface ITrackDisplay {
-  getSegments: (segmentCount: number) => { min: number; max: number }[] | null
+  getSegments: (segmentCount: number) => { min: number; max: number }[][] | null
   loaded: boolean
   duration: number
   reverse: boolean
@@ -50,30 +51,34 @@ const TrackDisplay = ({
   outerMargin,
   innerMargin,
 }: ITrackDisplay) => {
-  let center = useMemo(() => {
-    return {
-      x: width / 2,
-      y: height / 2,
-    }
-  }, [width, height])
-
-  let layerOffset: { x: number; y: number } = {
-    x: -Math.abs(center.x),
-    y: -Math.abs(center.y),
-  }
-
-  let outerRadius = useMemo(() => height / 2 - (outerMargin as number), [
+  const {
+    center, // center of circle is defined by width and height
+    layerOffset, // layer offset defined by center (make 0:0 the center)
+    outerRadius, // outer radius (outer bound of draw area)
+    innerRadius, // inner radius (inner bound of draw area)
+    drawAreaHeight, // height of draw area (diff b/w inner and outer radii)
+    zeroRadius, // zero radius (center of draw area)
+    circumferencePixels, // number of pixels around the zero radius
+  }: OuseCircleGeometry = useCircleGeometry({
+    width,
     height,
-  ])
-  let innerRadius = useMemo(() => innerMargin as number, [height])
-  let drawAreaHeight = outerRadius - innerRadius
-  let zeroRadius = innerRadius + drawAreaHeight / 2
+    outerMargin,
+    innerMargin,
+  })
 
-  let circumferencePixels = useMemo(() => {
-    return 2 * Math.PI * zeroRadius
-  }, [layerOffset, zeroRadius])
+  const segments = useMemo(() => {
+    if (loaded && getSegments && circumferencePixels) {
+      let segments = getSegments(circumferencePixels)
+      if (segments && segments[0]) {
+        return segments
+      } else {
+        return null
+      }
+    } else {
+      return null
+    }
+  }, [circumferencePixels, loaded])
 
-  const segments = loaded ? getSegments(circumferencePixels) : null
   // const transport = useContextSelector(
   //   ContextForAudio as Context<OAudioEngine>,
   //   value => (value.transport ? value.transport : null)
@@ -147,12 +152,12 @@ const TrackDisplay = ({
           />
           <TrackImageBackground height={height} layerOffset={layerOffset} />
           <Layer offset={layerOffset}>
-            {segments && (
+            {segments && segments[0] && (
               <TrackWaveform
                 zeroRadius={zeroRadius}
                 drawAreaHeight={drawAreaHeight}
                 volume={volume}
-                segments={segments}
+                segments={segments[0]}
                 layerOffset={layerOffset}
               />
             )}

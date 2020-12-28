@@ -94,9 +94,9 @@ const TrackKonvaPlayhead = ({
         //   transport.seconds,
         //   getPlayheadLocation(transport.seconds)
         // )
-        // movePlayhead(
-        //   getPlayheadCoords(getPlayheadLocation(transport.seconds))()
-        // )
+        movePlayhead(
+          getPlayheadCoords(getPlayheadLocation(transport.seconds))()
+        )
       }
     }, 64)
 

@@ -9,7 +9,7 @@ import {
   Rect,
   Image,
 } from 'react-konva'
-import { useProject, useTracks } from '../../helpers'
+import { useProject } from '../../helpers'
 import styled from 'styled-components'
 
 interface IPlayButtonDeluxe {

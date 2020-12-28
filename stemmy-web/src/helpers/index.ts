@@ -5,7 +5,6 @@ import { useProject } from './useProject'
 import useTrack from './useTrack'
 import useTransport from './useTransport'
 import { useEntityPlayer } from './useEntityPlayer'
-import useTracks from './useTracks'
 import audioContext, { OAudioEngine } from './audioContext'
 import { RootState } from '../store'
 import { createSelector } from 'reselect'
@@ -14,7 +13,6 @@ export {
   useProjects,
   useProject,
   useTrack,
-  useTracks,
   useTransport,
   useEntityPlayer,
   audioContext,

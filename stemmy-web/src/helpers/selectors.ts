@@ -1,14 +1,148 @@
 import { RootState } from '../store'
 import { createSelector } from 'reselect'
 import { OAudioEngine } from './audioContext'
+import { IuseProjectsOptions } from './useProjects'
+import { ProjectIOError } from '../store/projects/types'
+import { ProjectProps } from '../types'
 
 // selectors that depend only on state and should be singletons
+
 export const tracksLoadingSelector = (state: RootState) =>
   state.tracks.loadingIds
+export const tracksErrorSelector = (state: RootState) => state.tracks.errors
 export const entitiesLoadingSelector = (state: RootState) => state.loops.loading
+export const entitiesErrorSelector = (state: RootState) => state.loops.errors
 export const sourceBuffersLoadingSelector = (state: OAudioEngine) =>
   state.buffersLoading
+export const entityPlayersLoadingSelector = (state: OAudioEngine) =>
+  state.playersLoading
+
 export const selectTracks = (state: RootState) => state.tracks
+export const selectProjects = (state: RootState) => state.projects
+export const selectDraftProjectIds = (state: RootState) => state.projects.drafts
+export const selectCreatingProjectId = (state: RootState) =>
+  state.projects.creatingId
+
+// Projects
+export const selectProjectsById = createSelector(
+  [selectProjects],
+  projects => projects.byId
+)
+
+export const selectNothingById = createSelector(
+  [selectProjectsById],
+  byId => null
+)
+
+export const selectDraftProjects = createSelector(
+  [selectProjectsById, selectDraftProjectIds],
+  (byId, drafts) => drafts.map(id => byId[id])
+)
+
+export const projectsLoadingSelector = createSelector(
+  [selectProjects],
+  projects => projects.loading
+)
+
+export const projectsErrorsSelector = createSelector(
+  [selectProjects],
+  projects => projects.errors
+)
+
+export const projectsSavingSelector = createSelector(
+  [selectProjects],
+  projects => projects.saving
+)
+
+export const projectsPlayerChangesSelector = createSelector(
+  [selectProjects],
+  projects => projects.playerChanges
+)
+
+export const projectsEditorChangesSelector = createSelector(
+  [selectProjects],
+  projects => projects.unsavedEditorChanges
+)
+
+export const createDesiredProjectWithPlayerChangesSelector = (
+  projectId: string | null
+) =>
+  createSelector(
+    [selectProjectsById, projectsPlayerChangesSelector],
+    (byId, playerChanges) =>
+      projectId ? { ...byId[projectId], ...playerChanges[projectId] } : null
+  )
+
+export const createDesiredProjectWithEditorChangesSelector = (
+  projectId: string | null
+) =>
+  createSelector(
+    [selectProjectsById, projectsEditorChangesSelector],
+    (byId, unsavedEditorChanges) =>
+      projectId
+        ? { ...byId[projectId], ...unsavedEditorChanges[projectId] }
+        : null
+  )
+
+export const createProjectSavingSelector = (project: ProjectProps | null) =>
+  createSelector([projectsSavingSelector], saving =>
+    project
+      ? saving.length > 0 &&
+        saving.findIndex((p: ProjectProps) => p === project) > -1
+        ? true
+        : false
+      : false
+  )
+
+export const createDesiredProjectsSelector = (
+  projectIds: string[] | null,
+  type: IuseProjectsOptions['type']
+) => {
+  if (type) {
+    switch (type) {
+      case 'drafts':
+        return selectDraftProjects
+      default:
+        return selectNothingById
+    }
+  } else if (projectIds) {
+    return createSelector([selectProjectsById], byId =>
+      projectIds ? projectIds.map(id => byId[id]).filter(p => p) : null
+    )
+  } else {
+    return selectNothingById
+  }
+}
+
+export const createDesiredProjectSelector = (projectId: string | null) =>
+  createSelector([selectProjectsById], byId =>
+    projectId ? byId[projectId] : null
+  )
+
+export const createProjectLoadingSelector = (projectId: string | null) =>
+  createSelector([projectsLoadingSelector], loading =>
+    projectId ? (loading.indexOf(projectId) > -1 ? true : false) : false
+  )
+
+export const createProjectErrorSelector = (projectId: string | null) =>
+  createSelector([projectsErrorsSelector], errors => {
+    let projectErrors = errors
+      .map(e => (e.id && e.id === projectId ? e : null))
+      .filter(e => e) as ProjectIOError[]
+    if (projectErrors.length > 0) {
+      return projectErrors
+    } else {
+      return null
+    }
+  })
+
+// export const createProjectErrorSelector = (projectId: string | null) =>
+//   createSelector([projectsErrorSelector], errors =>
+//     errors.map(e => e))
+// export const createDesiredProjectsSelector = (projectIds: string[] | null) =>
+//   createSelector([selectProjectsById], byId =>
+//     projectIds ? projectIds.map(id => byId[id]).filter(p => p) : null
+//   )
 
 // Tracks
 export const selectTracksById = createSelector(
@@ -24,6 +158,34 @@ export const createDesiredTracksSelector = (trackIds: string[] | null) =>
 export const createTrackLoadingSelector = (trackId: string | null) =>
   createSelector([tracksLoadingSelector], tracksLoading =>
     trackId ? !(tracksLoading.indexOf(trackId) === -1) : false
+  )
+
+export const tracksPlayerChangesSelector = createSelector(
+  [selectTracks],
+  tracks => tracks.playerChanges
+)
+
+export const tracksEditorChangesSelector = createSelector(
+  [selectTracks],
+  tracks => tracks.unsavedEditorChanges
+)
+
+export const createDesiredTrackWithPlayerChangesSelector = (
+  trackId: string | null
+) =>
+  createSelector(
+    [selectTracksById, tracksPlayerChangesSelector],
+    (byId, playerChanges) =>
+      trackId ? { ...byId[trackId], ...playerChanges[trackId] } : null
+  )
+
+export const createDesiredTrackWithEditorChangesSelector = (
+  trackId: string | null
+) =>
+  createSelector(
+    [selectTracksById, tracksEditorChangesSelector],
+    (byId, unsavedEditorChanges) =>
+      trackId ? { ...byId[trackId], ...unsavedEditorChanges[trackId] } : null
   )
 
 // entity selector

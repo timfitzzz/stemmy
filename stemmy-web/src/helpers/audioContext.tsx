@@ -219,8 +219,6 @@ export const AudioProvider = ({
     libraryContextState
   )
 
-  console.log('re-rendering audio engine, library state is ', library)
-
   const [audioContext, setAudioContext] = useState<BaseContext | null>(null)
   const [masterGainNode, setMasterGainNode] = useState<Gain<'gain'> | null>()
   const [transport, setTransport] = useState<Transport | null>(null)

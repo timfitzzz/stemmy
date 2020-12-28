@@ -64,7 +64,7 @@ const DraftProjectsBrowser = function({
   children,
   onSelect,
 }: IDraftProjectsPanel) {
-  const { projects } = useProjects({ type: 'drafts', props: ['id'] })
+  const { projects } = useProjects({ type: 'drafts' })
   const [hover, setHover] = useState<number | null>(null)
   const [selected, setSelected] = useState<number | null>(0)
 

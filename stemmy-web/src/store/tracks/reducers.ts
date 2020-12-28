@@ -6,6 +6,8 @@ const initialState: ITrackStore = {
   errors: [],
   byId: {},
   loadingIds: [],
+  playerChanges: {},
+  unsavedEditorChanges: {},
 }
 
 export function tracksReducer(
@@ -46,6 +48,7 @@ export function tracksReducer(
           {
             id: action.payload.trackId,
             message: action.payload.err.toString(),
+            timestamp: new Date(),
           },
           ...state.errors,
         ],
@@ -64,17 +67,25 @@ export function tracksReducer(
           {
             id: action.payload[0].id,
             message: action.payload[1].toString(),
+            timestamp: new Date(),
           },
           ...state.errors,
         ],
       }
     case TrackActions.SAVE_TRACK_SUCCESS:
+      let {
+        [action.payload.afterSave.id!]: discardSave,
+        ...otherEditorChangeEntries
+      } = state.unsavedEditorChanges
       return {
         ...state,
         saving: getNewSavingWithoutTrack(action.payload.beforeSave),
         byId: {
           ...state.byId,
           [action.payload.afterSave.id!]: action.payload.afterSave,
+        },
+        unsavedEditorChanges: {
+          ...otherEditorChangeEntries,
         },
       }
     case TrackActions.CREATE_NEW_TRACK:
@@ -99,9 +110,43 @@ export function tracksReducer(
           {
             id: action.payload[0].id || 'none',
             message: action.payload[1].toString(),
+            timestamp: new Date(),
           },
           ...state.errors,
         ],
+      }
+    case TrackActions.MODIFY_TRACK_EDITOR:
+      return {
+        ...state,
+        unsavedEditorChanges: {
+          ...state.unsavedEditorChanges,
+          [action.payload.id]: {
+            ...state.unsavedEditorChanges[action.payload.id],
+            ...action.payload.changes,
+          },
+        },
+      }
+    case TrackActions.MODIFY_TRACK_PLAYER:
+      return {
+        ...state,
+        playerChanges: {
+          ...state.playerChanges,
+          [action.payload.id]: {
+            ...state.playerChanges[action.payload.id],
+            ...action.payload.changes,
+          },
+        },
+      }
+    case TrackActions.RESET_TRACK_PLAYER:
+      let {
+        [action.payload.id]: discardPlayerChanges,
+        ...otherPlayerChanges
+      } = state.playerChanges
+      return {
+        ...state,
+        playerChanges: {
+          ...otherPlayerChanges,
+        },
       }
     default:
       return state

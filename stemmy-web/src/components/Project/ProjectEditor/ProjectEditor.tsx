@@ -72,7 +72,7 @@ interface ProjectEditorProps {
 }
 
 const ProjectEditor = function({ projectId }: ProjectEditorProps) {
-  const { project, copy, getSetter, getClockSetter, commitCopy } = useProject({
+  const { project, originalProject } = useProject({
     id: projectId,
   })
 
@@ -121,28 +121,28 @@ const ProjectEditor = function({ projectId }: ProjectEditorProps) {
     []
   )
 
-  const nameSetter = useCallback(getSetter<string>('name'), [])
-  const imageurlSetter = useCallback(getSetter<string>('imageurl'), [])
+  // const nameSetter = useCallback(getSetter<string>('name'), [])
+  // const imageurlSetter = useCallback(getSetter<string>('imageurl'), [])
 
   return (
-    <ProjectEditorWrapper>
+    <ProjectEditorWrapper key={'projectEditor' + projectId}>
       <ProjectEditorSplitWrapper>
         <ProjectEditorFormFieldsWrapper>
           <ProjectHeader>
-            <SettingEditorProvider setter={nameSetter}>
+            <SettingEditorProvider setter={() => {}}>
               {setter => (
                 <EditableLabel
                   fieldName={'name'}
                   type={'textarea'}
-                  value={copy ? copy.name : ''}
+                  value={project ? project.name : ''}
                   setValue={setter}
                   valueContainer={ProjectTitle}
                   inputContainer={TitleInputContainer}
-                  saveHandler={commitCopy}
+                  saveHandler={() => {}}
                 />
               )}
             </SettingEditorProvider>
-            <SettingEditorProvider setter={imageurlSetter}>
+            <SettingEditorProvider setter={() => {}}>
               {setter => (
                 <>
                   <TracksDisplay

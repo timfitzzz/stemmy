@@ -51,7 +51,12 @@ const Project = function({ view, projectId }: IProjectView) {
         projectId &&
         {
           basicList: <BasicList {...projectProps} />,
-          editor: <ProjectEditor projectId={projectId} />,
+          editor: (
+            <ProjectEditor
+              projectId={projectId}
+              key={'projecteditor' + projectId}
+            />
+          ),
           smallPlayer: <div></div>,
           bigPlayer: <div></div>,
         }[view]}

@@ -24,7 +24,14 @@ export function saveLoopDataFail(
 ): LoopActionTypes {
   return {
     type: LoopActions.SAVE_LOOP_FAIL,
-    payload: [loopData, { timestamp: new Date(), error: err.toString() }],
+    payload: [
+      loopData,
+      {
+        timestamp: new Date(),
+        error: err.toString(),
+        oid: loopData.id || 'none',
+      },
+    ],
   }
 }
 
@@ -38,12 +45,9 @@ export function saveLoopDataSuccess(
   }
 }
 
-export const getLoop = (id: string): ThunkAction<
-  void,
-  RootState,
-  unknown,
-  LoopActionTypes
-> => async dispatch => {
+export const getLoop = (
+  id: string
+): ThunkAction<void, RootState, unknown, LoopActionTypes> => async dispatch => {
   dispatch({
     type: LoopActions.GET_LOOP,
     payload: id,
@@ -52,7 +56,7 @@ export const getLoop = (id: string): ThunkAction<
     const loop = await API.getLoopById(id)
     dispatch(getLoopSuccess(loop.data))
   } catch (err) {
-    dispatch(getLoopFail({ id }, err ))
+    dispatch(getLoopFail({ id }, err))
   }
 }
 
@@ -62,7 +66,10 @@ export function getLoopFail(
 ): LoopActionTypes {
   return {
     type: LoopActions.GET_LOOP_FAIL,
-    payload: [{ id }, { timestamp: new Date(), error: err.toString() }],
+    payload: [
+      { id },
+      { timestamp: new Date(), error: err.toString(), oid: id || 'none' },
+    ],
   }
 }
 

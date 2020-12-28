@@ -7,7 +7,6 @@ import {
   hasId,
 } from '../'
 
-
 const initialState: IProjectStore = {
   saving: [],
   drafts: [],
@@ -20,12 +19,20 @@ const initialState: IProjectStore = {
     currentPageIds: [],
   },
   creatingId: null,
+  loading: [],
+  playerChanges: {},
+  unsavedEditorChanges: {},
 }
 
 function arrayToObject(projects: ProjectProps[]) {
   let output: { [key: string]: ProjectProps } = {}
   projects.forEach(project => (output[project.id || 0] = project))
   return output
+}
+
+function remStr(array: string[], string: string): string[] {
+  let index = array.indexOf(string)
+  return array.slice(0, index).concat(array.slice(index + 1))
 }
 
 export function projectsReducer(
@@ -70,23 +77,20 @@ export function projectsReducer(
       // keep track of its creation process and then remove it once it's done.
       return {
         ...state,
-        saving: [...state.saving as hasName[], action.payload],
+        saving: [...(state.saving as hasName[]), action.payload],
       }
     case ProjectActions.CREATE_NEW_PROJECT_SUCCESS:
       return {
         ...state,
         saving: removeDocFromSavingByName(state.saving as hasName[], {
-          name: action.payload.newProject.name
+          name: action.payload.newProject.name,
         }),
         byId: {
           ...state.byId,
           [action.payload.newProject.id!]: action.payload.newProject,
         },
-        drafts: [
-          ...state.drafts,
-          action.payload.newProject.id!
-        ],
-        creatingId: action.payload.newProject.id!
+        drafts: [...state.drafts, action.payload.newProject.id!],
+        creatingId: action.payload.newProject.id!,
       }
     case ProjectActions.CREATE_NEW_PROJECT_FAIL:
       return {
@@ -99,7 +103,7 @@ export function projectsReducer(
     case ProjectActions.CLEAR_CREATING_PROJECT_ID:
       return {
         ...state,
-        creatingId: null
+        creatingId: null,
       }
     case ProjectActions.SAVE_PROJECT:
       // once a project has already been created,
@@ -113,7 +117,8 @@ export function projectsReducer(
     case ProjectActions.SAVE_PROJECT_SUCCESS:
       return {
         ...state,
-        saving: removeDocFromSavingById( // has an id for sure
+        saving: removeDocFromSavingById(
+          // has an id for sure
           state.saving as hasId[],
           action.payload.beforeSave
         ),
@@ -125,39 +130,56 @@ export function projectsReducer(
     case ProjectActions.SAVE_PROJECT_FAIL:
       return {
         ...state,
-        saving: removeDocFromSavingById(state.saving as hasId[], action.payload.err),
-        byId: { ...state.byId, [action.payload.project.id!]: action.payload.project },
+        saving: removeDocFromSavingById(
+          state.saving as hasId[],
+          action.payload.err
+        ),
+        byId: {
+          ...state.byId,
+          [action.payload.project.id!]: action.payload.project,
+        },
         errors: [action.payload.err, ...state.errors],
+      }
+    case ProjectActions.GET_PROJECT:
+      return {
+        ...state,
+        loading:
+          state.loading.indexOf(action.payload) > -1
+            ? state.loading
+            : [...state.loading, action.payload],
       }
     case ProjectActions.GET_PROJECT_SUCCESS:
       return {
         ...state,
         byId: { ...state.byId, [action.payload.id!]: action.payload },
-        drafts: action.payload.draft ? [ ...state.drafts, action.payload.id!] : state.drafts
+        drafts: action.payload.draft
+          ? [...state.drafts, action.payload.id!]
+          : state.drafts,
+        loading: remStr(state.loading, action.payload.id!),
       }
     case ProjectActions.GET_PROJECT_FAIL:
       return {
         ...state,
-        errors: [ action.payload.err, ...state.errors ],
+        errors: [action.payload.err, ...state.errors],
+        loading: remStr(state.loading, action.payload.project!.id!),
       }
     case ProjectActions.LOAD_USER_DRAFT_PROJECTS_SUCCESS:
-      
       let newProjects: { [key: string]: ProjectProps } = {}
-      
-      action.payload.forEach((project) => {
+
+      action.payload.forEach(project => {
         newProjects[project.id!] = project
       })
 
-      let draftProjectIds = 
-        action.payload.map(project => project.id)
-          .filter(
-            projectId => !(projectId === undefined || projectId === null)
-          ) as string[]
+      let draftProjectIds = action.payload
+        .map(project => project.id)
+        .filter(
+          projectId => !(projectId === undefined || projectId === null)
+        ) as string[]
 
       return {
         ...state,
         drafts: draftProjectIds,
-        byId: { ...state.byId, ...newProjects }
+        byId: { ...state.byId, ...newProjects },
       }
     default:
       return state

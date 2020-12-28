@@ -13,6 +13,7 @@ export enum LoopActions {
 export type APIError = {
   timestamp: Date
   error: string
+  oid: string
 }
 
 export interface ILoopStore {

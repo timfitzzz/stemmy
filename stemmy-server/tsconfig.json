@@ -23,7 +23,7 @@
     "rootDirs": ["src"]
   },
   "include": ["./src/**/*.ts", "./testData/**/*.ts"],
-  "exclude": ["node_modules", "./public", "dist", "test"],
+  "exclude": ["node_modules", "./public", "dist", "test", "fileStore"],
   "linterOptions": {
     "exclude": []
   }

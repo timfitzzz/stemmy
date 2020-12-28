@@ -52,7 +52,7 @@ export class TracksService {
   //   const tracksPage = this.getPage(page, perPage);
   // }
 
-  async getBundleById(id: string): Promise<trackBundle> {
+  async getBundleById(id: string): Promise<trackBundle | null> {
     return new Promise(async (resolve, reject) => {
       const track = await this.Track.findById(id).exec();
       let entity;
@@ -77,7 +77,7 @@ export class TracksService {
       } else if (track) {
         resolve({ track: convertTrackSchemaToProjectTrackProps(track) });
       } else {
-        resolve();
+        resolve(null);
       }
     });
   }
@@ -94,8 +94,8 @@ export class TracksService {
     }
   }
 
-  async findBundleByIds(ids: string[]): Promise<trackBundle[]> {
-    return Promise.all<trackBundle>(
+  async findBundleByIds(ids: string[]): Promise<(trackBundle | null)[]> {
+    return Promise.all<trackBundle | null>(
       ids.map(async (id: string) => {
         return await this.getBundleById(id);
       })
@@ -107,7 +107,8 @@ export class TracksService {
       try {
         let bundles: trackBundle[] = [];
         ids.forEach(async (id) => {
-          bundles.push(await this.getBundleById(id));
+          let bundle = await this.getBundleById(id);
+          if (bundle) bundles.push(bundle);
           if (bundles.length === ids.length) {
             resolve(bundles);
           }

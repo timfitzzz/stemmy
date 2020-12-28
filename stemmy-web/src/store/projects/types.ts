@@ -24,21 +24,24 @@ export enum ProjectActions {
   LOAD_USER_DRAFT_PROJECTS = 'LOAD_USER_DRAFT_PROJECTS',
   LOAD_USER_DRAFT_PROJECTS_SUCCESS = 'LOAD_USER_DRAFT_PROJECTS_SUCCESS',
   LOAD_USER_DRAFT_PROJECTS_FAIL = 'LOAD_USER_DRAFT_PROJECTS_FAIL',
-  CLEAR_CREATING_PROJECT_ID = 'CLEAR_CREATING_PROJECT_ID'
+  CLEAR_CREATING_PROJECT_ID = 'CLEAR_CREATING_PROJECT_ID',
+  MODIFY_PROJECT_EDITOR = 'MODIFY_PROJECT_EDITOR',
+  MODIFY_PROJECT_PLAYER = 'MODIFY_PROJECT_PLAYER',
 }
 
 export type ProjectIOError = {
   id?: string
   message: string
+  timestamp: Date
 }
 
 export interface IProjectStore {
   saving: hasId[] | hasName[] | ProjectProps[] | []
-  errors: ProjectIOError[] | []
+  errors: ProjectIOError[]
   byId: {
     [key: string]: ProjectProps
-  },
-  drafts: string[], // each array is a page
+  }
+  drafts: string[] // each array is a page
   page: {
     loading: boolean
     pageNumber: number
@@ -46,6 +49,13 @@ export interface IProjectStore {
     currentPageIds: string[]
   }
   creatingId: null | string
+  loading: string[]
+  playerChanges: {
+    [key: string]: Partial<ProjectProps>
+  }
+  unsavedEditorChanges: {
+    [key: string]: Partial<ProjectProps>
+  }
 }
 
 export interface LoadingProjectsAction {
@@ -74,7 +84,7 @@ export interface GetProjectSuccessAction {
 export interface GetProjectFailAction {
   type: ProjectActions.GET_PROJECT_FAIL
   payload: {
-    project: ProjectProps, 
+    project: ProjectProps
     err: ProjectIOError
   }
 }
@@ -96,7 +106,7 @@ export interface UpdateProjectsPageAction {
 
 export interface CreateNewProjectAction {
   type: ProjectActions.CREATE_NEW_PROJECT
-  payload: { name: string, draft: true }
+  payload: { name: string; draft: true }
 }
 
 export interface CreateNewProjectSuccessPayload {
@@ -110,7 +120,7 @@ export interface CreateNewProjectSuccessAction {
 
 export interface CreateNewProjectFailAction {
   type: ProjectActions.CREATE_NEW_PROJECT_FAIL
-  payload: { name: string, err: ProjectIOError }
+  payload: { name: string; err: ProjectIOError }
 }
 
 export interface SaveProjectAction {
@@ -131,7 +141,7 @@ export interface SaveProjectSuccessAction {
 export interface SaveProjectFailAction {
   type: ProjectActions.SAVE_PROJECT_FAIL
   payload: {
-    project: ProjectProps, 
+    project: ProjectProps
     err: ProjectIOError
   }
 }

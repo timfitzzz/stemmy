@@ -89,27 +89,11 @@ export const useEntityPlayer = (
     entityPlayerSelector
   )
 
-  // console.log(entityUrl, entityId, sourceBuffer, entityPlayer);
-
-  // let [entityPlayer, setEntityPlayer] = useState<Player | null>(null)
   let [startTime, setStartTime] = useState<number | null>(null)
   let [readyToPlay, setReadyToPlay] = useState<boolean>(false)
   let [loadingBuffer, setLoadingBuffer] = useState<boolean>(false)
   let [loadingPlayer, setLoadingPlayer] = useState<boolean>(false)
   let [unschedulingCb, setUnschedulingCb] = useState<(() => void) | null>(null)
-
-  // let [gettingNode, setGettingNode] = useState<boolean>(false)
-  // let [nodeReady, setNodeReady] = useState<boolean>(false)
-
-  // let {
-  //   Transport,
-  //   audioCtx,
-  //   getSourceBuffer,
-  //   getEntityPlayer,
-  //   upsertSourceBuffer,
-  //   upsertEntityPlayer,
-  //   clearEntityPlayer,
-  // } = contextObj
 
   debugOn &&
     console.log(
@@ -214,69 +198,6 @@ export const useEntityPlayer = (
     readyToPlay,
     unschedulingCb,
   ])
-
-  // bits of old hook for reference
-  //   // // finding no entityPlayer in state,
-  //   // // check for the entityPlayer in the react audiocontext
-  //   // debugOn && console.log('--- no entityPlayer in state')
-  //   // let ctxEntityPlayer = getEntityPlayer!(entityId)
-  //   // if (!ctxEntityPlayer) {
-  //     // finding no entityPlayer in the react context,
-  //     // check for the entity's ToneAudioBuffer in the react context
-  //     debugOn && console.log('---- no entityPlayer in context')
-  //     let ctxSourceBuffer = getSourceBuffer!(entityId)
-  //     if (!ctxSourceBuffer) {
-  //       // finding no ToneAudioBuffer in the react context,
-  //       // create one from the provided url
-  //       debugOn && console.log(
-  //         '----- no ToneAudioBuffer in context, creating one for provided url'
-  //       )
-  //       let newBuffer = new ToneAudioBuffer(entityUrl, (buffer) => {
-  //         debugOn && console.log('------ decoded audio data, adding it to context')
-  //         upsertSourceBuffer!(entityId, buffer)
-  //       })
-  //     } else {
-  //       // Having found a ToneAudioBuffer in the react context,
-  //       // create an entityPlayer and add it to state
-  //       debugOn && console.log(
-  //         '----- found ToneAudioBuffer in context, creating entityPlayer'
-  //       )
-  //       let player = new Player({
-  //         url: entityUrl,
-  //         loop: true,
-  //         onerror: (err) => console.log(err),
-  //         onload: () => {
-  //           debugOn && console.log('upserting entityPlayer', player)
-  //           upsertEntityPlayer!(entityId, player)
-  //         }
-  //       }).toDestination()
-  //     }
-  //   } else {
-  //     // Having found a Player in the react context,
-  //     // set it in local state
-  //     debugOn && console.log(
-  //       '--- player found in context, setting it as return state'
-  //     )
-  //     setEntityPlayer(ctxEntityPlayer)
-  //   }
-  // } else {
-  //   debugOn && console.log('--- entityPlayer already in state, will return')
-  // }
-
-  // async function startPlaybackNow() {
-  //   if (entityPlayer) {
-  //     entityPlayer.start()
-  //     setStartTime(Tone.now())
-  //     Transport?.start()
-  //   }
-  // }
-
-  // function stopPlaybackNow() {
-  //   if (entityPlayer) {
-  //     entityPlayer.stop()
-  //     setStartTime(null)
-  //   }
-  // }
 
   const getVolume: () => number | null = useMemo(
     () => () => {
@@ -454,50 +375,3 @@ export const useEntityPlayer = (
     getSegments,
   }
 }
-
-//   // if (nodeReady) {
-//   //   setGettingNode(false)
-//   // }
-
-//   useEffect(() => {
-//     console.log(
-//       'useEffect: ',
-//       audioData,
-//       contextObj,
-//       sourceNode,
-//       nodeReady,
-//       dependenciesMet(dependencies)
-//     )
-//     if (
-//       entityId &&
-//       audioCtx &&
-//       audioData &&
-//       dependenciesMet(dependencies) &&
-//       !nodeReady &&
-//       !gettingNode &&
-//       !sourceNode
-//     ) {
-//       setSourceNode(audioCtx.createBufferSource())
-//       setGettingNode(true)
-//       audioCtx.decodeAudioData(audioData).then((audioBuffer: AudioBuffer) => {
-//         if (sourceNode) {
-//           sourceNode.buffer = audioBuffer
-//           sourceNode.connect(audioCtx!.destination)
-//           sourceNode.loop = true
-//           setNodeReady(true)
-//         }
-//       })
-
-//       return () => {
-//         if (audioCtx && sourceNode) {
-//           sourceNode.stop()
-//           sourceNode.disconnect(audioCtx.destination)
-//           setNodeReady(false)
-//         }
-//       }
-//     }
-//   })
-
-//   console.log(nodeReady, sourceNode)
-//   return { nodeReady, sourceNode }
-// }

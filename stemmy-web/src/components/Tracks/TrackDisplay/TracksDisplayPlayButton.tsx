@@ -32,8 +32,6 @@ export function TracksDisplayPlayButton({
     playToggle()
   }
 
-  console.log(playPoints)
-
   return (
     <Layer offset={layerOffset} onClick={handlePlayPause}>
       {playing ? (

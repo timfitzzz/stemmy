@@ -21,12 +21,12 @@ export const getTrack = (
 > => async dispatch => {
   dispatch({
     type: TrackActions.GET_TRACK,
-    payload: trackId
+    payload: trackId,
   })
   try {
-    const { data: trackBundleResult }: API.AxiosTrackBundleResponse = await API.getTrackBundleFromDb(
-      trackId
-    )
+    const {
+      data: trackBundleResult,
+    }: API.AxiosTrackBundleResponse = await API.getTrackBundleFromDb(trackId)
     dispatch(upsertTrack(trackBundleResult.track))
     dispatch(getTrackSuccess(trackBundleResult.track))
   } catch (err) {
@@ -37,7 +37,7 @@ export const getTrack = (
 export function getTrackSuccess(track: TrackProps): TrackActionTypes {
   return {
     type: TrackActions.GET_TRACK_SUCCESS,
-    payload: track
+    payload: track,
   }
 }
 
@@ -46,8 +46,8 @@ export function getTrackFail(trackId: string, err: Error): TrackActionTypes {
     type: TrackActions.GET_TRACK_FAIL,
     payload: {
       trackId,
-      err
-    }
+      err,
+    },
   }
 }
 
@@ -115,12 +115,38 @@ export const saveTrack = (
 > => async dispatch => {
   dispatch(setTrackSaving(track))
   try {
-    const { data: trackSaveResult }: API.AxiosTrackResponse = await API.saveTrackToDb(
-      track
-    )
+    const {
+      data: trackSaveResult,
+    }: API.AxiosTrackResponse = await API.saveTrackToDb(track)
     dispatch(upsertTrack(trackSaveResult))
     dispatch(saveTrackSuccess(track, trackSaveResult))
   } catch (err) {
     dispatch(saveTrackFail(track, err))
+  }
+}
+
+export const modifyTrackPlayer = (
+  trackId: string,
+  track: Partial<TrackProps>
+): TrackActionTypes => {
+  return {
+    type: TrackActions.MODIFY_TRACK_PLAYER,
+    payload: {
+      id: trackId,
+      changes: track,
+    },
+  }
+}
+
+export const modifyTrackEditor = (
+  trackId: string,
+  track: Partial<TrackProps>
+): TrackActionTypes => {
+  return {
+    type: TrackActions.MODIFY_TRACK_EDITOR,
+    payload: {
+      id: trackId,
+      changes: track,
+    },
   }
 }

@@ -1,0 +1,4 @@
+[ZoneTransfer]
+ZoneId=3
+ReferrerUrl=https://cloud.mongodb.com/v2/5fe8dca5ef0b391ae62bb281
+HostUrl=https://cloud.mongodb.com/nds/5fe8dca5ef0b391ae62bb281/users/$external/CN%3Dmongotestcert/certs?monthsUntilExpiration=6

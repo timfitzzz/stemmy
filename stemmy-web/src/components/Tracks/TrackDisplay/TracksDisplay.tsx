@@ -29,7 +29,14 @@ import { useSelector } from 'react-redux'
 const happycat = require('../../../images/happycat.jpg') as string
 import useImage from 'use-image'
 import { TracksDisplayPlayButton } from './TracksDisplayPlayButton'
-import useTracks, { IuseTracksModes } from '../../../helpers/useTracks'
+import { useTracksAudio, IuseTracksAudioModes } from '../../../hooks'
+import {
+  useCircleGeometry,
+  OuseCircleGeometry,
+  OuseCenter,
+  Coordinates,
+  WavSegment,
+} from '../../../hooks'
 
 interface ITracksDisplay {
   trackIds: string[]
@@ -53,19 +60,20 @@ const TracksDisplay = ({
   playToggle,
   isPlaying,
 }: ITracksDisplay) => {
-  // center of circle is defined by width and height
-  let center = useMemo(() => {
-    return {
-      x: width / 2,
-      y: height / 2,
-    }
-  }, [width, height])
-
-  // layer offset defined by center (make 0:0 the center)
-  let layerOffset: { x: number; y: number } = {
-    x: -Math.abs(center.x),
-    y: -Math.abs(center.y),
-  }
+  const {
+    center, // center of circle is defined by width and height
+    layerOffset, // layer offset defined by center (make 0:0 the center)
+    outerRadius, // outer radius (outer bound of draw area)
+    innerRadius, // inner radius (inner bound of draw area)
+    drawAreaHeight, // height of draw area (diff b/w inner and outer radii)
+    zeroRadius, // zero radius (center of draw area)
+    circumferencePixels, // number of pixels around the zero radius
+  }: OuseCircleGeometry = useCircleGeometry({
+    width,
+    height,
+    outerMargin,
+    innerMargin,
+  })
 
   // temporary image, later to be populated from project settings
   const [cat, catStatus] = useImage(happycat)
@@ -73,32 +81,23 @@ const TracksDisplay = ({
     { min: number; max: number }[][] | null
   >(null)
 
-  // outer radius (outer bound of draw area)
-  let outerRadius = useMemo(() => height / 2 - (outerMargin as number), [
-    height,
-  ])
-  // inner radius (inner bound of draw area)
-  let innerRadius = useMemo(() => innerMargin as number, [height])
-  // height of draw area (difference between inner and outer radii)
-  let drawAreaHeight = outerRadius - innerRadius
-  // zero radius (center of draw area)
-  let zeroRadius = innerRadius + drawAreaHeight / 2
-
-  // number of pixels around the zero radius
-  let circumferencePixels = useMemo(() => {
-    return 2 * Math.PI * zeroRadius
-  }, [layerOffset, zeroRadius])
-
-  const { tracks, getSegments, getLongest, fullyLoaded } = useTracks({
+  const {
+    tracks,
+    sourceBuffers,
+    getSegments,
+    getLongest,
+    fullyLoaded,
+  } = useTracksAudio({
     ids: trackIds,
-    modules: [IuseTracksModes.player],
+    modules: [IuseTracksAudioModes.player],
     setPlayback,
   })
 
   let longest = getLongest()
-  console.log('tracks fully loaded? ', fullyLoaded ? 'yes' : 'no')
-  console.log('longest track: ', longest, tracks)
+  // console.log('tracks fully loaded? ', fullyLoaded ? 'yes' : 'no')
+  // console.log('longest track: ', longest, tracks)
 
+  // wait until tracks are fully loaded and then run
   useEffect(() => {
     console.log('tracksdisplay useeffect', fullyLoaded)
     if (fullyLoaded && getSegments) {
