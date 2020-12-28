@@ -51,3 +51,7 @@ test/**/*.js.map
 # Project
 /public
 /dist
+
+fileStore/*
+.env
+gcloudstoragecreds.json

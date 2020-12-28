@@ -3,14 +3,15 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "mountfiles": "node ./mountFileStore.js",
     "build": "yarn tsc",
     "tsc": "tsc --project tsconfig.compile.json --traceResolution",
     "tsc:w": "tsc --project tsconfig.json -w",
-    "start": "nodemon --watch \"./src/**/*.ts\" --ignore \"node_modules/**/*\" --exec ts-node \"./src/index.ts\"",
-    "start:prod": "cross-env NODE_ENV=production node dist/index.js",
-    "test": "yarn test:lint && yarn test:coverage",
-    "test:unit": "cross-env NODE_ENV=test jest",
-    "test:coverage": "yarn test:unit"
+    "start": "export $(cat .env | xargs) && yarn run mountfiles && nodemon --watch \"./src/**/*.ts\" --ignore \"node_modules/**/*\" --exec ts-node \"./src/index.ts\"",
+    "start:prod": "export $(cat .env | xargs) && yarn run mountfiles && cross-env NODE_ENV=production node dist/index.js",
+    "test": "export $(cat .env | xargs) && yarn run mountfiles && yarn test:lint && yarn test:coverage",
+    "test:unit": "export $(cat .env | xargs) && yarn run mountfiles && cross-env NODE_ENV=test jest",
+    "test:coverage": "export $(cat .env | xargs) && yarn run mountfiles && yarn test:unit"
   },
   "dependencies": {
     "@tsed/ajv": "5.65.1",
